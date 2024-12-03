@@ -1,0 +1,45 @@
+version: '3.8'
+
+services:
+  app:
+    build:
+      context: .
+      target: ${NODE_ENV:-development}
+    ports:
+      - '5000-5010:5000'
+    environment:
+      - NODE_ENV=${NODE_ENV:-development}
+    deploy:
+      replicas: ${APP_REPLICAS:-1}
+    volumes:
+      - ${NODE_ENV:-development}:/app/node_modules
+      - .:/app
+    depends_on:
+      rabbitmq:
+        condition: service_healthy
+    restart: always
+    healthcheck:
+      test: ['CMD', 'curl', '-f', 'http://localhost:5000/health']
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  rabbitmq:
+    image: rabbitmq:3-management
+    ports:
+      - '5672-5682:5672'
+      - '15672-15682:15672'
+    volumes:
+      - rabbitmq_data:/var/lib/rabbitmq
+    deploy:
+      replicas: ${RABBITMQ_REPLICAS:-1}
+    healthcheck:
+      test: ['CMD', 'rabbitmq-diagnostics', '-q', 'ping']
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+volumes:
+  rabbitmq_data:
+  development:
+  production:
