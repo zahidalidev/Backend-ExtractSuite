@@ -6,7 +6,7 @@ services:
       context: .
       target: ${NODE_ENV:-development}
     ports:
-      - '5000-5010:5000'
+      - '5000:5000'
     environment:
       - NODE_ENV=${NODE_ENV:-development}
     deploy:
@@ -27,8 +27,8 @@ services:
   rabbitmq:
     image: rabbitmq:3-management
     ports:
-      - '5672-5682:5672'
-      - '15672-15682:15672'
+      - '5672:5672'
+      - '15672:15672'
     volumes:
       - rabbitmq_data:/var/lib/rabbitmq
     deploy:
