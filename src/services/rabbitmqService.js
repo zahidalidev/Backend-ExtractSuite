@@ -17,10 +17,8 @@ async function connectQueue() {
 
 async function setupQueues(queueName, resultQueue) {
   try {
-    console.log(`Setting up queues - Queue: ${queueName}, Result Queue: ${resultQueue}`)
-    await channel.assertQueue(queueName, {
-      durable: true,
-    })
+    console.log(`Setting up queues - Result Queue: ${resultQueue}`)
+    // Only setup the result queue since scraping_queue is handled in app.js
     await channel.assertQueue(resultQueue, {
       durable: true,
       autoDelete: true,
@@ -31,7 +29,6 @@ async function setupQueues(queueName, resultQueue) {
     throw error
   }
 }
-
 async function sendLinksToQueue(linkArray, queueName, requestId, resultQueue) {
   console.log(`Sending ${linkArray.length} links to queue ${queueName}`)
   const promises = linkArray.map((link, index) => {

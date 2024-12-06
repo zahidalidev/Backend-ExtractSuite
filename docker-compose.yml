@@ -1,19 +1,10 @@
-version: '3.8'
-
 services:
   app:
-    build:
-      context: .
-      target: ${NODE_ENV:-development}
+    build: .
     ports:
       - '5000:5000'
     environment:
-      - NODE_ENV=${NODE_ENV:-development}
-    deploy:
-      replicas: ${APP_REPLICAS:-1}
-    volumes:
-      - ${NODE_ENV:-development}:/app/node_modules
-      - .:/app
+      - NODE_ENV=production
     depends_on:
       rabbitmq:
         condition: service_healthy
@@ -31,8 +22,6 @@ services:
       - '15672:15672'
     volumes:
       - rabbitmq_data:/var/lib/rabbitmq
-    deploy:
-      replicas: ${RABBITMQ_REPLICAS:-1}
     healthcheck:
       test: ['CMD', 'rabbitmq-diagnostics', '-q', 'ping']
       interval: 10s
@@ -41,5 +30,3 @@ services:
 
 volumes:
   rabbitmq_data:
-  development:
-  production:
