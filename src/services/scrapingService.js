@@ -1,4 +1,5 @@
 const { getChannel } = require('./rabbitmqService')
+const { websiteScrappingService } = require('./webScrapper')
 
 function setupResultConsumer(resultQueue, totalLinks) {
   console.log(`Setting up consumer for ${resultQueue}, expecting ${totalLinks} results`)
@@ -8,15 +9,17 @@ function setupResultConsumer(resultQueue, totalLinks) {
     const channel = getChannel()
 
     const timeoutId = setTimeout(() => {
-      console.error(`Consumer timeout after 30s - Processed: ${processedCount}/${totalLinks}`)
+      console.log(`Results collected so far: ${processedCount} out of ${totalLinks}`)
+      console.error(`Consumer timeout after 10m - Processed: ${processedCount}/${totalLinks}`)
       console.error('Current results:', JSON.stringify(results, null, 2))
       channel.cancel(consumerTag)
       reject(new Error(`Processing timeout - Received ${processedCount}/${totalLinks} results`))
-    }, 30000)
+    }, 600000) // 10 minutes = 600000 milliseconds
 
     let consumerTag
     channel
       .consume(resultQueue, (msg) => {
+        console.log('Received message:', msg?.content.toString())
         if (!msg) {
           console.warn('Received null message in consumer')
           return
@@ -53,15 +56,15 @@ function setupResultConsumer(resultQueue, totalLinks) {
 }
 
 async function processLink(link) {
-  await new Promise((resolve) => setTimeout(resolve, 1000))
+  const scrapedData = await websiteScrappingService(link, false)
+  console.log('The data is being parsed')
+  // console.log('Scrapped data:', scrapedData)
+  
   return {
     link,
-    status: 'completed',
-    timestamp: new Date().toISOString(),
-    data: `Processed ${link} successfully`,
+    ...scrapedData,
   }
 }
-
 async function setupScrapingQueueConsumer() {
   const channel = getChannel()
   try {

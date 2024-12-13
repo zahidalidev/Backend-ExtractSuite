@@ -32,7 +32,12 @@ router.post('/scrapWebsite', async (req, res) => {
 
   try {
     await setupQueues(queueName, resultQueue)
+
+
+
     const linkArray = links.split(',').map((link) => link.trim())
+
+
     console.log(`Processing ${linkArray.length} links`)
 
     const resultPromise = setupResultConsumer(resultQueue, linkArray.length)

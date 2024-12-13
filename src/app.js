@@ -1,4 +1,5 @@
-const express = require('express')
+const express = require('express');
+const cors = require('cors');
 const cluster = require('cluster')
 const numCPUs = require('os').cpus().length
 const rateLimit = require('express-rate-limit')
@@ -15,21 +16,27 @@ if (cluster.isMaster && process.env.NODE_ENV === 'production') {
   }
 
   cluster.on('exit', (worker, code, signal) => {
-    console.log(`Worker ${worker.process.pid} died. Restarting...`)
+    console.log(`Worker ${worker.process.pid} died Restarting...`)
     cluster.fork()
   })
 } else {
-  const app = express()
-  
+  const app = express();
+
+  app.use(cors({
+    origin: '*',
+    methods: ['GET', 'POST', 'OPTIONS'],
+    allowedHeaders: ['Content-Type', 'Authorization'],
+    credentials: true
+  }))
+
   // Rate limiting
   const limiter = rateLimit({
     windowMs: 1 * 60 * 1000, // 1 minute
     max: 1000 // limit each IP to 1000 requests per windowMs
   })
-  
+
   app.use(limiter)
   app.use(express.json({ limit: '50mb' })) // Increased payload limit
-
   // Health check endpoint
   app.get('/health', (req, res) => res.status(200).send('OK'))
   

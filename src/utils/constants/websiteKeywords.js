@@ -1,0 +1,128 @@
+const serviceKeywords = [
+  'Catalog',
+  'Inventory',
+  'Menu',
+  'Assortment',
+  'Roster',
+  'Lineup',
+  'Array',
+  'Range',
+  'Collection',
+  'Offerings',
+  'Portfolio',
+  'Selection',
+  'Catalogue',
+  'Repertoire',
+  'Stock',
+  'Merchandise',
+  'Options',
+  'Line',
+  'Series',
+  'Assortment',
+  'Services',
+  'Selling',
+  'Products',
+  'Offerings',
+  'Solutions',
+  'Sell',
+  'About Us',
+  'Our Story',
+  'What We Do',
+  'What We Offer',
+  'Offer',
+  'Portfolio',
+  'Projects',
+  'Capabilities',
+  'Expertise',
+  'Service',
+  'List',
+  'Goods',
+  'Merchandize',
+  'Items',
+  'Products Catalog',
+  'Product Line',
+  'Service Catalog',
+  'Product Range',
+  'Service Menu',
+  'Product Assortment',
+  'Service Assortment',
+  'Product Selection',
+  'Service Selection',
+  'Product Inventory',
+  'Service Inventory',
+  'Product Portfolio',
+  'Service Portfolio',
+  'Product Offering',
+  'Service Offering',
+  'Product Lineup',
+  'Service Lineup',
+  'Product Repertoire',
+  'Service Repertoire',
+  'Product Stock',
+  'Service Stock',
+  'Product Catalogue',
+  'Service Catalogue',
+  'Product Options',
+  'Service Options',
+  'Product Series',
+  'Service Series',
+  'Product Roster',
+  'Service Roster',
+  'Overview',
+];
+
+const aboutKeywords = [
+  'About Us',
+  'Our Story',
+  'Company Overview',
+  'Who We Are',
+  'Our Mission',
+  'Company Profile',
+  'Vision Statement',
+  'Values',
+  'History',
+  'Leadership',
+  'Team',
+  'Corporate Information',
+  'Background',
+  'Philosophy',
+  'Culture',
+]
+
+const inValidUrlKeywords = [
+  'collections/',
+  'products/',
+  'shop/',
+  'jpg',
+  'png',
+  'mp4',
+  'blogs/',
+  'blog/',
+  'category/',
+  'popup',
+  'settings',
+  '?',
+  '/uploads',
+  '/messaging',
+  '/channels',
+]
+
+const commonWords = [
+  'a', 'an', 'the', // Articles
+  'and', 'but', 'or', 'nor', // Conjunctions
+  'as', 'at', 'by', 'for', 'from', 'in', 'into', 'of', 'on', 'onto', 'to', 'with', // Prepositions
+  'this', 'that', 'these', 'those', // Demonstratives
+  'is', 'am', 'are', 'was', 'were', 'be', 'being', 'been', // Be verbs
+  'have', 'has', 'had', 'having', // Auxiliary verbs
+  'do', 'does', 'did', 'doing', // Auxiliary verbs
+  'will', 'shall', 'would', 'should', 'can', 'could', 'may', 'might', 'must', // Modal verbs
+  'i', 'you', 'he', 'she', 'it', 'we', 'they', 'me', 'him', 'her', 'us', 'them', // Pronouns
+];
+
+
+module.exports = {
+  serviceKeywords,
+  aboutKeywords,
+  inValidUrlKeywords,
+  commonWords,
+};
