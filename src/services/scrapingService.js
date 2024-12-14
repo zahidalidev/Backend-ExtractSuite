@@ -55,13 +55,13 @@ function setupResultConsumer(resultQueue, totalLinks) {
   })
 }
 
-async function processLink(link) {
-  const scrapedData = await websiteScrappingService(link, false)
+async function processLink(webDetails) {
+  const scrapedData = await websiteScrappingService(webDetails, false)
   console.log('The data is being parsed')
   // console.log('Scrapped data:', scrapedData)
   
   return {
-    link,
+    link: webDetails.link,
     ...scrapedData,
   }
 }
@@ -75,17 +75,17 @@ async function setupScrapingQueueConsumer() {
       if (!data) return
 
       try {
-        const { link, requestId, resultQueue } = JSON.parse(data.content.toString())
-        console.log(`Processing link: ${link} for request: ${requestId}`)
+        const { webDetails, requestId, resultQueue } = JSON.parse(data.content.toString())
+        console.log(`Processing link: ${webDetails.link} for request: ${requestId}`)
 
-        const result = await processLink(link)
+        const result = await processLink(webDetails)
 
         await channel.sendToQueue(resultQueue, Buffer.from(JSON.stringify(result)), {
           persistent: true,
         })
 
         channel.ack(data)
-        console.log(`Completed processing link: ${link}`)
+        console.log(`Completed processing link: ${webDetails.link}`)
       } catch (error) {
         console.error('Worker processing error:', error)
         channel.nack(data, false, false)

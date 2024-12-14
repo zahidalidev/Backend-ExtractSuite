@@ -18,7 +18,9 @@ router.post('/scrapWebsite', async (req, res) => {
     return res.status(503).json({ error: 'Service unavailable - RabbitMQ connection not ready' })
   }
 
-  const { links } = req.body
+  console.log('\n\n body',  req.body)
+  
+  const { links, domains, extractOptions } = req.body
   if (!links) {
     console.error('No links provided in request')
     return res.status(400).json({ error: 'Links are required' })
@@ -41,13 +43,15 @@ router.post('/scrapWebsite', async (req, res) => {
     console.log(`Processing ${linkArray.length} links`)
 
     const resultPromise = setupResultConsumer(resultQueue, linkArray.length)
-    await sendLinksToQueue(linkArray, queueName, requestId, resultQueue)
+    
+    await sendLinksToQueue(linkArray, queueName, requestId, resultQueue, domains, extractOptions)
 
     const results = await resultPromise
     await cleanupQueues(queueName, resultQueue)
 
     console.log(`Request ${requestId} completed successfully`)
     res.json({ results })
+
   } catch (error) {
     console.error(`Request ${requestId} failed:`, error)
     await cleanupQueues(queueName, resultQueue)

@@ -29,16 +29,25 @@ async function setupQueues(queueName, resultQueue) {
     throw error
   }
 }
-async function sendLinksToQueue(linkArray, queueName, requestId, resultQueue) {
+async function sendLinksToQueue(linkArray, queueName, requestId, resultQueue, domains, extractOptions) {
   console.log(`Sending ${linkArray.length} links to queue ${queueName}`)
+
   const promises = linkArray.map((link, index) => {
     console.log(`Sending link ${index + 1}/${linkArray.length}: ${link}`)
+
+    const webDetails = {
+      link, 
+      domains,
+      extractOptions
+    }
+
     return channel.sendToQueue(
       queueName,
-      Buffer.from(JSON.stringify({ link, requestId, resultQueue })),
+      Buffer.from(JSON.stringify({ webDetails, requestId, resultQueue })),
       { persistent: true }
     )
   })
+
   await Promise.all(promises)
   console.log('All links sent to queue successfully')
 }

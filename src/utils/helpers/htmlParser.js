@@ -3,7 +3,7 @@ const axios = require('axios');
 const { load } = require('cheerio');
 const url = require('url');
 
-const { addressRegex, keyIndicatorsRegex, contactRegex } = require('../constants/regexPatterns');
+const { addressRegex, keyIndicatorsRegex } = require('../constants/regexPatterns');
 const { selectors } = require('../constants/selectors');
 const { aboutKeywords, serviceKeywords } = require('../constants/websiteKeywords');
 const { isInternalLink, isSocialLink, isLogo } = require('./validators');
@@ -61,10 +61,13 @@ const checkEmployeeCount = (number) => {
   return NumberOfEmployees['10000+'];
 };
 
-const extractContactInfo = (text) => {
+const extractContactInfo = (text, domains) => {
   const contacts = [];
   let match;
   const existingValues = new Set();
+
+  // modify this regex according to domains
+  const contactRegex = /((?:\+\d{1,2}\s?)?\(?\d{3}\)?[\s.-]?\d{3}[\s.-]?\d{4})|([a-zA-Z0-9._-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,})/g
 
   while ((match = contactRegex.exec(text)) !== null) {
     const contact = match[0];
@@ -185,7 +188,7 @@ const extractBulletPoints = (response) => {
   };
 };
 
-const extractRelevantContent = ($, serviceKeywords, aboutKeywords, isAbout, isBusiness) => {
+const extractRelevantContent = ($, serviceKeywords, aboutKeywords, isAbout, isBusiness, domains, extractOptions) => {
   const services = [];
   const indicators = [];
   const about = [];
@@ -197,6 +200,7 @@ const extractRelevantContent = ($, serviceKeywords, aboutKeywords, isAbout, isBu
       const isLastChildDiv = selector === 'div' && $(element).is('div') && $(element).is(':last-child') && !$(element).find('div').length;
       const text = $(element).text().trim();
 
+      // conditions for extractOptions
       if (selector !== 'div') {
         if (containServiceKeywords(text, serviceKeywords)) services.push(text);
 
@@ -205,7 +209,7 @@ const extractRelevantContent = ($, serviceKeywords, aboutKeywords, isAbout, isBu
         const indicators = extractKeyIndicators(text);
         if (!isBusiness && indicators.length > 0) indicators.push(...indicators);
         
-        const contacts = extractContactInfo(text);
+        const contacts = extractContactInfo(text, domains);
         if (!isBusiness && contacts.length > 0) contact.push(...contacts);
       }
 
@@ -280,7 +284,7 @@ const getUniqueIds = (idArray) => {
   return uniqueArray;
 };
 
-const extractWebsiteInformation = async (websiteUrl, isBusiness) => {
+const extractWebsiteInformation = async (websiteUrl, isBusiness, domains, extractOptions) => {
   try {
     const visitedPages = new Set();
     const baseUrl = new URL(websiteUrl).origin;
@@ -307,6 +311,8 @@ const extractWebsiteInformation = async (websiteUrl, isBusiness) => {
             aboutKeywords,
             pageUrl.includes('about') || pageUrl.includes('who-we-are'),
             isBusiness,
+            domains, 
+            extractOptions
           );
 
           services.forEach((item) => companyServices.add(item));
@@ -391,6 +397,7 @@ const extractWebsiteInformation = async (websiteUrl, isBusiness) => {
     };
   }
 };
+
 module.exports = {
   NumberOfEmployees,
   checkEmployeeCountFromString,

@@ -1,9 +1,26 @@
 const { extractWebsiteInformation, trimContentUptoMax } = require("../utils/helpers/htmlParser");
 const { isValidUrl } = require("../utils/helpers/validators");
 
-module.exports.websiteScrappingService = async (websiteUrl, isBusiness) => {
+//data format
+// {
+//     "links": "https://www.nadra.gov.pk/,https://arcadiancafe.com/",
+//     "domains": ["@gmail", "@hotmail"],
+//     "extractOptions": {
+//         "about": true,
+//         "contact": true,
+//         "address": false
+//     }
+//     // "isFile": true // next task
+// }
+
+module.exports.websiteScrappingService = async (webDetails, isBusiness) => {
     try {
-        
+        const { link, domains, extractOptions } = webDetails;
+
+        console.log('\n\n\n ____webDetails', webDetails);
+
+        let websiteUrl = link;
+
         if (!isValidUrl(websiteUrl)) websiteUrl = `https://${websiteUrl}`;
 
         console.log('Running website scrapping for', websiteUrl);
@@ -16,7 +33,7 @@ module.exports.websiteScrappingService = async (websiteUrl, isBusiness) => {
             addresses,
             socialLinks,
             logo,
-        } = await extractWebsiteInformation(websiteUrl, isBusiness);
+        } = await extractWebsiteInformation(websiteUrl, isBusiness, domains, extractOptions);
 
         companyServices = trimContentUptoMax(
             companyServices.map((item) =>
