@@ -1,8 +1,9 @@
-const { getChannel } = require('./rabbitmqService')
-const { websiteScrappingService } = require('./webScrapper')
+const { getChannel } = require('.')
+const { websiteScrappingService } = require('../scraping/web')
 
 function setupResultConsumer(resultQueue, totalLinks) {
   console.log(`Setting up consumer for ${resultQueue}, expecting ${totalLinks} results`)
+  
   return new Promise((resolve, reject) => {
     const results = []
     let processedCount = 0
@@ -57,9 +58,7 @@ function setupResultConsumer(resultQueue, totalLinks) {
 
 async function processLink(webDetails) {
   const scrapedData = await websiteScrappingService(webDetails, false)
-  console.log('The data is being parsed')
-  // console.log('Scrapped data:', scrapedData)
-  
+
   return {
     link: webDetails.link,
     ...scrapedData,

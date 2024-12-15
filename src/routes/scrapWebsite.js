@@ -5,8 +5,8 @@ const {
   setupQueues,
   sendLinksToQueue,
   cleanupQueues,
-} = require('../services/rabbitmqService')
-const { setupResultConsumer } = require('../services/scrapingService')
+} = require('../services/queue')
+const { setupResultConsumer } = require('../services/queue/consumer')
 
 const router = express.Router()
 
@@ -17,8 +17,6 @@ router.post('/scrapWebsite', async (req, res) => {
     console.error('RabbitMQ channel not ready')
     return res.status(503).json({ error: 'Service unavailable - RabbitMQ connection not ready' })
   }
-
-  console.log('\n\n body',  req.body)
   
   const { links, domains, extractOptions } = req.body
   if (!links) {
@@ -35,10 +33,7 @@ router.post('/scrapWebsite', async (req, res) => {
   try {
     await setupQueues(queueName, resultQueue)
 
-
-
     const linkArray = links.split(',').map((link) => link.trim())
-
 
     console.log(`Processing ${linkArray.length} links`)
 

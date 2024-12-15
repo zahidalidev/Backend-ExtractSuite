@@ -1,5 +1,5 @@
 const amqp = require('amqplib')
-const { AMQP_URL } = require('../config/rabbitmq')
+const { AMQP_URL } = require('../../config/rabbitmq')
 
 let channel
 
@@ -29,16 +29,24 @@ async function setupQueues(queueName, resultQueue) {
     throw error
   }
 }
-async function sendLinksToQueue(linkArray, queueName, requestId, resultQueue, domains, extractOptions) {
+
+async function sendLinksToQueue(
+  linkArray,
+  queueName,
+  requestId,
+  resultQueue,
+  domains,
+  extractOptions
+) {
   console.log(`Sending ${linkArray.length} links to queue ${queueName}`)
 
   const promises = linkArray.map((link, index) => {
     console.log(`Sending link ${index + 1}/${linkArray.length}: ${link}`)
 
     const webDetails = {
-      link, 
+      link,
       domains,
-      extractOptions
+      extractOptions,
     }
 
     return channel.sendToQueue(

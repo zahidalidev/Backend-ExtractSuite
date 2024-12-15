@@ -3,9 +3,9 @@ const cors = require('cors');
 const cluster = require('cluster')
 const numCPUs = require('os').cpus().length
 const rateLimit = require('express-rate-limit')
-const { connectQueue, getChannel } = require('./services/rabbitmqService')
-const { setupScrapingQueueConsumer } = require('./services/scrapingService')
-const scrapingRoutes = require('./routes/scrapingRoutes')
+const { connectQueue, getChannel } = require('./services/queue')
+const { setupScrapingQueueConsumer } = require('./services/queue/consumer')
+const scrapingRoutes = require('./routes/scrapWebsite')
 const { PORT } = require('./config/rabbitmq')
 
 // Only run clustering in production
