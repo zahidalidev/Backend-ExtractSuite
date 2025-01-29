@@ -1,57 +1,121 @@
-const express = require('express')
-const { v4: uuidv4 } = require('uuid')
+const express = require('express');
+const { v4: uuidv4 } = require('uuid');
 const {
-  getChannel,
-  setupQueues,
-  sendLinksToQueue,
-  cleanupQueues,
-} = require('../services/queue')
-const { setupResultConsumer } = require('../services/queue/consumer')
+    getChannel,
+    setupQueues,
+    sendLinksToQueue,
+    cleanupQueues,
+} = require('../services/queue');
+const { setupResultConsumer } = require('../services/queue/consumer');
 
-const router = express.Router()
+const router = express.Router();
 
 router.post('/scrapWebsite', async (req, res) => {
-  console.log('Received scraping request:', req.body)
+    console.log('Received scraping request:', req.body);
 
-  if (!getChannel()) {
-    console.error('RabbitMQ channel not ready')
-    return res.status(503).json({ error: 'Service unavailable - RabbitMQ connection not ready' })
-  }
-  
-  const { links, domains, extractOptions } = req.body
-  if (!links) {
-    console.error('No links provided in request')
-    return res.status(400).json({ error: 'Links are required' })
-  }
-
-  const requestId = uuidv4()
-  const queueName = 'scraping_queue'
-  const resultQueue = `result_queue_${requestId}`
-
-  console.log(`Processing request ${requestId}`)
-
-  try {
-    await setupQueues(queueName, resultQueue)
-
-    const linkArray = links.split(',').map((link) => link.trim())
-
-    console.log(`Processing ${linkArray.length} links`)
-
-    const resultPromise = setupResultConsumer(resultQueue, linkArray.length)
+    if (!getChannel()) {
+        console.error('RabbitMQ channel not ready');
+        return res.status(503).json({ error: 'Service unavailable - RabbitMQ connection not ready' });
+    }
     
-    await sendLinksToQueue(linkArray, queueName, requestId, resultQueue, domains, extractOptions)
+    const { links, domains, extractOptions } = req.body;
+    if (!links || typeof links !== 'string') {
+        console.error('Invalid or missing links in request');
+        return res.status(400).json({ error: 'Links must be provided as a comma-separated string' });
+    }
 
-    const results = await resultPromise
-    await cleanupQueues(queueName, resultQueue)
+    const requestId = uuidv4();
+    const queueName = 'scraping_queue';
+    const resultQueue = `result_queue_${requestId}`;
 
-    console.log(`Request ${requestId} completed successfully`)
-    res.json({ results })
+    console.log(`Processing request ${requestId}`);
 
-  } catch (error) {
-    console.error(`Request ${requestId} failed:`, error)
-    await cleanupQueues(queueName, resultQueue)
-    res.status(500).json({ error: error.message })
-  }
-})
+    try {
+        await setupQueues(queueName, resultQueue);
 
-module.exports = router
+        const linkArray = links.split(',')
+            .map((link) => link.trim())
+            .filter(link => link.length > 0);
+
+        if (linkArray.length === 0) {
+            throw new Error('No valid links provided after processing');
+        }
+
+        console.log(`Processing ${linkArray.length} links`);
+
+        const resultPromise = setupResultConsumer(resultQueue, linkArray.length);
+        
+        await sendLinksToQueue(linkArray, queueName, requestId, resultQueue, domains, extractOptions);
+
+        const results = await resultPromise;
+        await cleanupQueues(queueName, resultQueue);
+
+        console.log(`Request ${requestId} completed successfully`);
+        res.json({ data: results });
+    } catch (error) {
+        console.error(`Request ${requestId} failed:`, error);
+        await cleanupQueues(queueName, resultQueue);
+        res.status(500).json({ error: error.message });
+    }
+});
+
+module.exports = router;
+
+
+// const express = require('express')
+// const { v4: uuidv4 } = require('uuid')
+// const {
+//   getChannel,
+//   setupQueues,
+//   sendLinksToQueue,
+//   cleanupQueues,
+// } = require('../services/queue')
+// const { setupResultConsumer } = require('../services/queue/consumer')
+
+// const router = express.Router()
+
+// router.post('/scrapWebsite', async (req, res) => {
+//   console.log('Received scraping request:', req.body)
+
+//   if (!getChannel()) {
+//     console.error('RabbitMQ channel not ready')
+//     return res.status(503).json({ error: 'Service unavailable - RabbitMQ connection not ready' })
+//   }
+  
+//   const { links, domains, extractOptions } = req.body
+//   if (!links) {
+//     console.error('No links provided in request')
+//     return res.status(400).json({ error: 'Links are required' })
+//   }
+
+//   const requestId = uuidv4()
+//   const queueName = 'scraping_queue'
+//   const resultQueue = `result_queue_${requestId}`
+
+//   console.log(`Processing request ${requestId}`)
+
+//   try {
+//     await setupQueues(queueName, resultQueue)
+
+//     const linkArray = links.split(',').map((link) => link.trim())
+
+//     console.log(`Processing ${linkArray.length} links`)
+
+//     const resultPromise = setupResultConsumer(resultQueue, linkArray.length)
+    
+//     await sendLinksToQueue(linkArray, queueName, requestId, resultQueue, domains, extractOptions)
+
+//     const results = await resultPromise
+//     await cleanupQueues(queueName, resultQueue)
+
+//     console.log(`Request ${requestId} completed successfully`)
+//     res.json({ data: results })
+
+//   } catch (error) {
+//     console.error(`Request ${requestId} failed:`, error)
+//     await cleanupQueues(queueName, resultQueue)
+//     res.status(500).json({ error: error.message })
+//   }
+// })
+
+// module.exports = router

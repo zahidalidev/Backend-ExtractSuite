@@ -1,0 +1,156 @@
+service: testnoderabit
+
+provider:
+  name: aws
+  runtime: nodejs18.x
+  region: us-east-1
+  memorySize: 512
+  timeout: 120
+  iamRoleStatements:
+    - Effect: Allow
+      Action:
+        - sqs:*
+      Resource: "*"
+  environment:
+    RABBITMQ_URL: "amqps://oqkcmynh:onlFg3llXQTFzVUofU2uf5e2JCMqyNUT@moose.rmq.cloudamqp.com/oqkcmynh"
+    NODE_ENV: "production"
+
+package:
+  individually: true
+  patterns:
+    - '!**'
+    - 'src/**/*.js'
+    - 'index.js'
+    - 'package.json'
+    - '!src/**/*.test.js'
+    - '!src/**/__tests__/**'
+    - 'node_modules/amqplib/**'
+    - 'node_modules/express/**'
+    - 'node_modules/uuid/**'
+
+functions:
+  app:
+    handler: index.handler
+    events:
+      - http:
+          path: /{proxy+}
+          method: ANY
+          cors: true
+
+resources:
+  Resources:
+    ApiGatewayRestApi:
+      Type: AWS::ApiGateway::RestApi
+      Properties:
+        Name: testnoderabit-dev
+        EndpointConfiguration:
+          Types:
+            - REGIONAL
+plugins:
+  - serverless-offline
+
+
+# ---------------------------------------------------------------------------------
+
+
+# service: testnoderabit
+
+# plugins:
+#   - serverless-offline
+
+# provider:
+#   name: aws
+#   runtime: nodejs18.x  
+#   region: us-east-1
+#   memorySize: 512
+#   timeout: 900
+
+# package:
+#   individually: true
+#   patterns:
+#     - '!**'
+#     - 'src/**/*.js'
+#     - 'index.js'
+#     - 'package.json'
+#     - '!src/**/*.test.js'
+#     - '!src/**/__tests__/**'
+#     - 'node_modules/amqplib/**'
+#     - 'node_modules/express/**'
+#     - 'node_modules/uuid/**'
+
+# functions:
+#   app:
+#     handler: index.handler
+#     events:
+#       - http:
+#           path: /api/{proxy+}
+#           method: ANY
+#           cors:
+#             origin: '*'
+#             headers:
+#               - Content-Type
+#               - X-Amz-Date
+#               - Authorization
+#               - X-Api-Key
+#               - X-Amz-Security-Token
+#               - X-Amz-User-Agent
+#             allowMethods:
+#               - GET
+#               - POST
+#               - PUT
+#               - DELETE
+#               - OPTIONS
+#             allowCredentials: false
+#     environment:
+#       RABBITMQ_URL: 'your-cloudamqp-url'
+
+# custom:
+#   allowedHeaders:
+#     - Accept
+#     - Content-Type
+#     - Authorization
+
+# ---------------------------------------------------------------------------------
+
+# service: testnoderabit
+
+# plugins:
+#   #for offline dev and testing...
+#   - serverless-offline
+
+# provider:
+#   name: aws
+#   runtime: nodejs18.x  
+#   region: us-east-1
+#   memorySize: 512
+#   timeout: 900
+#   vpc:
+#     securityGroupIds:
+#       - sg-xxxxxxxxxxxxxxxxx
+#     subnetIds:
+#       - subnet-xxxxxxxxxxxxxxxxx
+# custom:
+#   serverless-offline:
+#     noPrependStageInUrl: true #no stage names in URLs...
+#     useChildProcesses: true #use child processes for better isolation...
+#     useWorkerThreads: false
+
+# package:
+#   include:
+#     - src/**/*
+#     - index.js
+#     - package.json
+#     - node_modules/**
+
+# #lambda function defs...
+# functions:
+#   app:
+#     handler: index.handler
+#     events:
+#       - http:
+#           path: /{proxy+}
+#           method: ANY
+#     environment:
+#        RABBITMQ_URL: 'amqps://oqkcmynh:onlFg3llXQTFzVUofU2uf5e2JCMqyNUT@moose.rmq.cloudamqp.com/oqkcmynh'
+#       #  RABBITMQ_USERNAME: 'your-cloudamqp-username'
+#       #  RABBITMQ_PASSWORD: 'your-cloudamqp-password'

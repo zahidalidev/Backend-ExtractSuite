@@ -1,0 +1,413 @@
+{
+  "/Users/mac/Downloads/testnodeRabit/serverless-app": {
+    "versionSfCore": null,
+    "versionFramework": "4.4.19",
+    "isWithinCompose": false,
+    "isCompose": false,
+    "composeOrgName": null,
+    "composeResolverProviders": {
+      "default-aws-credential-resolver": "<REDACTED>",
+      "sls": {
+        "instance": {
+          "credentials": "<REDACTED>",
+          "serviceConfigFile": {
+            "service": "my-serverless-app",
+            "provider": {
+              "name": "aws",
+              "runtime": "nodejs18.x",
+              "stage": "dev",
+              "region": "us-east-1",
+              "versionFunctions": true,
+              "compiledCloudFormationTemplate": {
+                "AWSTemplateFormatVersion": "2010-09-09",
+                "Description": "The AWS CloudFormation template for this Serverless application",
+                "Resources": {
+                  "HelloLogGroup": {
+                    "Type": "AWS::Logs::LogGroup",
+                    "Properties": {
+                      "LogGroupName": "/aws/lambda/my-serverless-app-dev-hello"
+                    }
+                  },
+                  "IamRoleLambdaExecution": {
+                    "Type": "AWS::IAM::Role",
+                    "Properties": {
+                      "AssumeRolePolicyDocument": {
+                        "Version": "2012-10-17",
+                        "Statement": [
+                          {
+                            "Effect": "Allow",
+                            "Principal": {
+                              "Service": [
+                                "lambda.amazonaws.com"
+                              ]
+                            },
+                            "Action": [
+                              "sts:AssumeRole"
+                            ]
+                          }
+                        ]
+                      },
+                      "Policies": [
+                        {
+                          "PolicyName": {
+                            "Fn::Join": [
+                              "-",
+                              [
+                                "my-serverless-app",
+                                "dev",
+                                "lambda"
+                              ]
+                            ]
+                          },
+                          "PolicyDocument": {
+                            "Version": "2012-10-17",
+                            "Statement": [
+                              {
+                                "Effect": "Allow",
+                                "Action": [
+                                  "logs:CreateLogStream",
+                                  "logs:CreateLogGroup",
+                                  "logs:TagResource"
+                                ],
+                                "Resource": [
+                                  {
+                                    "Fn::Sub": "arn:${AWS::Partition}:logs:${AWS::Region}:${AWS::AccountId}:log-group:/aws/lambda/my-serverless-app-dev*:*"
+                                  }
+                                ]
+                              },
+                              {
+                                "Effect": "Allow",
+                                "Action": [
+                                  "logs:PutLogEvents"
+                                ],
+                                "Resource": [
+                                  {
+                                    "Fn::Sub": "arn:${AWS::Partition}:logs:${AWS::Region}:${AWS::AccountId}:log-group:/aws/lambda/my-serverless-app-dev*:*:*"
+                                  }
+                                ]
+                              }
+                            ]
+                          }
+                        }
+                      ],
+                      "Path": "/",
+                      "RoleName": {
+                        "Fn::Join": [
+                          "-",
+                          [
+                            "my-serverless-app",
+                            "dev",
+                            {
+                              "Ref": "AWS::Region"
+                            },
+                            "lambdaRole"
+                          ]
+                        ]
+                      }
+                    }
+                  },
+                  "HelloLambdaFunction": {
+                    "Type": "AWS::Lambda::Function",
+                    "Properties": {
+                      "Code": {
+                        "S3Bucket": "serverless-framework-deployments-us-east-1-46e50384-ffb6",
+                        "S3Key": "serverless/my-serverless-app/dev/1737651805696-2025-01-23T17:03:25.696Z/my-serverless-app.zip"
+                      },
+                      "Handler": "handler.hello",
+                      "Runtime": "nodejs18.x",
+                      "FunctionName": "my-serverless-app-dev-hello",
+                      "MemorySize": 1024,
+                      "Timeout": 6,
+                      "Role": {
+                        "Fn::GetAtt": [
+                          "IamRoleLambdaExecution",
+                          "Arn"
+                        ]
+                      }
+                    },
+                    "DependsOn": [
+                      "HelloLogGroup"
+                    ]
+                  },
+                  "HelloLambdaVersionz4C4Dmwotw2Np8k0YLKZVgJIbxCsvAuBu4Qx6Z1ZVk": {
+                    "Type": "AWS::Lambda::Version",
+                    "DeletionPolicy": "Retain",
+                    "Properties": {
+                      "FunctionName": {
+                        "Ref": "HelloLambdaFunction"
+                      },
+                      "CodeSha256": "I76e9zP1AZIwIEIh4su/3c9E4vsluuwPfFHBELvKvWI="
+                    }
+                  }
+                },
+                "Outputs": {
+                  "ServerlessDeploymentBucketName": {
+                    "Value": "serverless-framework-deployments-us-east-1-46e50384-ffb6",
+                    "Export": {
+                      "Name": "sls-my-serverless-app-dev-ServerlessDeploymentBucketName"
+                    }
+                  },
+                  "HelloLambdaFunctionQualifiedArn": {
+                    "Description": "Current Lambda function version",
+                    "Value": {
+                      "Ref": "HelloLambdaVersionz4C4Dmwotw2Np8k0YLKZVgJIbxCsvAuBu4Qx6Z1ZVk"
+                    },
+                    "Export": {
+                      "Name": "sls-my-serverless-app-dev-HelloLambdaFunctionQualifiedArn"
+                    }
+                  }
+                }
+              },
+              "vpc": {}
+            },
+            "functions": {
+              "hello": {
+                "handler": "handler.hello",
+                "events": [],
+                "name": "my-serverless-app-dev-hello",
+                "package": {},
+                "memory": 1024,
+                "timeout": 6,
+                "runtime": "nodejs18.x",
+                "vpc": {},
+                "versionLogicalId": "HelloLambdaVersionz4C4Dmwotw2Np8k0YLKZVgJIbxCsvAuBu4Qx6Z1ZVk"
+              }
+            }
+          },
+          "configFileDirPath": "/Users/mac/Downloads/testnodeRabit/serverless-app",
+          "config": {
+            "type": "sls"
+          },
+          "options": {},
+          "stage": "dev",
+          "dashboard": null,
+          "logger": {
+            "namespace": "s:core:resolver:sls",
+            "prefix": null,
+            "prefixColor": null
+          },
+          "_credentialsPromise": "<REDACTED>"
+        },
+        "resolvers": {}
+      }
+    },
+    "composeServiceName": null,
+    "servicePath": "/Users/mac/Downloads/testnodeRabit/serverless-app",
+    "serviceConfigFileName": "serverless.yml",
+    "service": {
+      "service": "my-serverless-app",
+      "provider": {
+        "name": "aws",
+        "runtime": "nodejs18.x",
+        "stage": "dev",
+        "region": "us-east-1",
+        "versionFunctions": true,
+        "compiledCloudFormationTemplate": {
+          "AWSTemplateFormatVersion": "2010-09-09",
+          "Description": "The AWS CloudFormation template for this Serverless application",
+          "Resources": {
+            "HelloLogGroup": {
+              "Type": "AWS::Logs::LogGroup",
+              "Properties": {
+                "LogGroupName": "/aws/lambda/my-serverless-app-dev-hello"
+              }
+            },
+            "IamRoleLambdaExecution": {
+              "Type": "AWS::IAM::Role",
+              "Properties": {
+                "AssumeRolePolicyDocument": {
+                  "Version": "2012-10-17",
+                  "Statement": [
+                    {
+                      "Effect": "Allow",
+                      "Principal": {
+                        "Service": [
+                          "lambda.amazonaws.com"
+                        ]
+                      },
+                      "Action": [
+                        "sts:AssumeRole"
+                      ]
+                    }
+                  ]
+                },
+                "Policies": [
+                  {
+                    "PolicyName": {
+                      "Fn::Join": [
+                        "-",
+                        [
+                          "my-serverless-app",
+                          "dev",
+                          "lambda"
+                        ]
+                      ]
+                    },
+                    "PolicyDocument": {
+                      "Version": "2012-10-17",
+                      "Statement": [
+                        {
+                          "Effect": "Allow",
+                          "Action": [
+                            "logs:CreateLogStream",
+                            "logs:CreateLogGroup",
+                            "logs:TagResource"
+                          ],
+                          "Resource": [
+                            {
+                              "Fn::Sub": "arn:${AWS::Partition}:logs:${AWS::Region}:${AWS::AccountId}:log-group:/aws/lambda/my-serverless-app-dev*:*"
+                            }
+                          ]
+                        },
+                        {
+                          "Effect": "Allow",
+                          "Action": [
+                            "logs:PutLogEvents"
+                          ],
+                          "Resource": [
+                            {
+                              "Fn::Sub": "arn:${AWS::Partition}:logs:${AWS::Region}:${AWS::AccountId}:log-group:/aws/lambda/my-serverless-app-dev*:*:*"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  }
+                ],
+                "Path": "/",
+                "RoleName": {
+                  "Fn::Join": [
+                    "-",
+                    [
+                      "my-serverless-app",
+                      "dev",
+                      {
+                        "Ref": "AWS::Region"
+                      },
+                      "lambdaRole"
+                    ]
+                  ]
+                }
+              }
+            },
+            "HelloLambdaFunction": {
+              "Type": "AWS::Lambda::Function",
+              "Properties": {
+                "Code": {
+                  "S3Bucket": "serverless-framework-deployments-us-east-1-46e50384-ffb6",
+                  "S3Key": "serverless/my-serverless-app/dev/1737651805696-2025-01-23T17:03:25.696Z/my-serverless-app.zip"
+                },
+                "Handler": "handler.hello",
+                "Runtime": "nodejs18.x",
+                "FunctionName": "my-serverless-app-dev-hello",
+                "MemorySize": 1024,
+                "Timeout": 6,
+                "Role": {
+                  "Fn::GetAtt": [
+                    "IamRoleLambdaExecution",
+                    "Arn"
+                  ]
+                }
+              },
+              "DependsOn": [
+                "HelloLogGroup"
+              ]
+            },
+            "HelloLambdaVersionz4C4Dmwotw2Np8k0YLKZVgJIbxCsvAuBu4Qx6Z1ZVk": {
+              "Type": "AWS::Lambda::Version",
+              "DeletionPolicy": "Retain",
+              "Properties": {
+                "FunctionName": {
+                  "Ref": "HelloLambdaFunction"
+                },
+                "CodeSha256": "I76e9zP1AZIwIEIh4su/3c9E4vsluuwPfFHBELvKvWI="
+              }
+            }
+          },
+          "Outputs": {
+            "ServerlessDeploymentBucketName": {
+              "Value": "serverless-framework-deployments-us-east-1-46e50384-ffb6",
+              "Export": {
+                "Name": "sls-my-serverless-app-dev-ServerlessDeploymentBucketName"
+              }
+            },
+            "HelloLambdaFunctionQualifiedArn": {
+              "Description": "Current Lambda function version",
+              "Value": {
+                "Ref": "HelloLambdaVersionz4C4Dmwotw2Np8k0YLKZVgJIbxCsvAuBu4Qx6Z1ZVk"
+              },
+              "Export": {
+                "Name": "sls-my-serverless-app-dev-HelloLambdaFunctionQualifiedArn"
+              }
+            }
+          }
+        },
+        "vpc": {}
+      },
+      "functions": {
+        "hello": {
+          "handler": "handler.hello",
+          "events": [],
+          "name": "my-serverless-app-dev-hello",
+          "package": {},
+          "memory": 1024,
+          "timeout": 6,
+          "runtime": "nodejs18.x",
+          "vpc": {},
+          "versionLogicalId": "HelloLambdaVersionz4C4Dmwotw2Np8k0YLKZVgJIbxCsvAuBu4Qx6Z1ZVk"
+        }
+      }
+    },
+    "serviceRawFile": "service: my-serverless-app\n\nprovider:\n  name: aws\n  runtime: nodejs18.x\n\nfunctions:\n  hello:\n    handler: handler.hello\n",
+    "command": [
+      "deploy"
+    ],
+    "options": {},
+    "error": null,
+    "params": {},
+    "machineId": "51e3f175dad12928695456894c574737",
+    "stage": "dev",
+    "accessKeyV2": "<REDACTED>",
+    "accessKeyV1": "<REDACTED>",
+    "orgId": "d8423dda-f389-46eb-95aa-d67dfb6905d9",
+    "orgName": "codexinc",
+    "userId": "LflS07klwyZmtf8BJB",
+    "dashboard": {
+      "isEnabledForService": false,
+      "requiredAuthentication": false,
+      "orgFeaturesInUse": null,
+      "orgObservabilityIntegrations": null,
+      "serviceAppId": null,
+      "serviceProvider": null,
+      "instanceParameters": null
+    },
+    "userName": "codexinc",
+    "subscription": null,
+    "userEmail": "engrzahid612@gmail.com",
+    "serviceProviderAwsRegion": "us-east-1",
+    "serviceProviderAwsCredentials": "<REDACTED>",
+    "serviceProviderAwsAccountId": "637423221707",
+    "projectType": "traditional",
+    "versionSf": "4.4.19",
+    "serviceProviderAwsCfStackName": "my-serverless-app-dev",
+    "integrations": {},
+    "serviceUniqueId": "arn:aws:cloudformation:us-east-1:637423221707:stack/my-serverless-app-dev/29cc9390-d9ac-11ef-8ea9-0affef43ad85",
+    "serviceProviderAwsCfStackId": "arn:aws:cloudformation:us-east-1:637423221707:stack/my-serverless-app-dev/29cc9390-d9ac-11ef-8ea9-0affef43ad85",
+    "serviceProviderAwsCfStackCreated": "2025-01-23T17:04:53.178Z",
+    "serviceProviderAwsCfStackUpdated": null,
+    "serviceProviderAwsCfStackStatus": "CREATE_COMPLETE",
+    "serviceProviderAwsCfStackOutputs": [
+      {
+        "OutputKey": "HelloLambdaFunctionQualifiedArn",
+        "OutputValue": "arn:aws:lambda:us-east-1:637423221707:function:my-serverless-app-dev-hello:1",
+        "Description": "Current Lambda function version",
+        "ExportName": "sls-my-serverless-app-dev-HelloLambdaFunctionQualifiedArn"
+      },
+      {
+        "OutputKey": "ServerlessDeploymentBucketName",
+        "OutputValue": "serverless-framework-deployments-us-east-1-46e50384-ffb6",
+        "ExportName": "sls-my-serverless-app-dev-ServerlessDeploymentBucketName"
+      }
+    ]
+  }
+}

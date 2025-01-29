@@ -7,7 +7,6 @@ const isInternalLink = (link, baseUrl) => {
   const linkDomain = new URL(link).origin;
   return linkDomain === baseUrl;
 };
-
 const isSocialLink = (text) => {
   const pattern = /\b((?:linkedin|facebook|instagram|twitter|youtube))(?!.*\bshare\b)\b/;
   const match = pattern.exec(text);

@@ -5,8 +5,25 @@ const numCPUs = require('os').cpus().length
 const rateLimit = require('express-rate-limit')
 const { connectQueue, getChannel } = require('./services/queue')
 const { setupScrapingQueueConsumer } = require('./services/queue/consumer')
-const scrapingRoutes = require('./routes/scrapWebsite')
 const { PORT } = require('./config/rabbitmq')
+
+const app = express();
+
+app.use(express.json());
+
+// Import routes first
+const scrapingRoutes = require('./routes/scrapWebsite');
+
+// Initialize express routes
+app.use('/api', scrapingRoutes);
+
+// Initialize queue connection
+const initQueue = async () => {
+    await connectQueue();
+};
+
+// Start queue initialization
+initQueue().catch(console.error);
 
 // Only run clustering in production
 if (cluster.isMaster && process.env.NODE_ENV === 'production') {
@@ -20,8 +37,6 @@ if (cluster.isMaster && process.env.NODE_ENV === 'production') {
     cluster.fork()
   })
 } else {
-  const app = express();
-
   app.use(cors({
     origin: '*',
     methods: ['GET', 'POST', 'OPTIONS'],
@@ -40,8 +55,6 @@ if (cluster.isMaster && process.env.NODE_ENV === 'production') {
   // Health check endpoint
   app.get('/health', (req, res) => res.status(200).send('OK'))
   
-  app.use('/api', scrapingRoutes)
-
   // Enhanced initialization
   async function initialize() {
     try {
@@ -97,3 +110,5 @@ if (cluster.isMaster && process.env.NODE_ENV === 'production') {
     console.log(`Worker ${process.pid} running on port ${PORT}`)
   })
 }
+
+module.exports = app;

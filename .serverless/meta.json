@@ -1,0 +1,989 @@
+{
+  "/Users/mac/Downloads/testnodeRabit": {
+    "versionSfCore": null,
+    "versionFramework": "4.4.19",
+    "isWithinCompose": false,
+    "isCompose": false,
+    "composeOrgName": null,
+    "composeResolverProviders": {
+      "default-aws-credential-resolver": "<REDACTED>",
+      "sls": {
+        "instance": {
+          "credentials": "<REDACTED>",
+          "serviceConfigFile": {
+            "service": "testnoderabit",
+            "provider": {
+              "name": "aws",
+              "runtime": "nodejs18.x",
+              "region": "us-east-1",
+              "memorySize": 512,
+              "timeout": 120,
+              "iamRoleStatements": [
+                {
+                  "Effect": "Allow",
+                  "Action": [
+                    "sqs:*"
+                  ],
+                  "Resource": "*"
+                }
+              ],
+              "environment": {
+                "RABBITMQ_URL": "amqps://oqkcmynh:onlFg3llXQTFzVUofU2uf5e2JCMqyNUT@moose.rmq.cloudamqp.com/oqkcmynh",
+                "NODE_ENV": "production"
+              },
+              "stage": "dev",
+              "versionFunctions": true,
+              "compiledCloudFormationTemplate": {
+                "AWSTemplateFormatVersion": "2010-09-09",
+                "Description": "The AWS CloudFormation template for this Serverless application",
+                "Resources": {
+                  "AppLogGroup": {
+                    "Type": "AWS::Logs::LogGroup",
+                    "Properties": {
+                      "LogGroupName": "/aws/lambda/testnoderabit-dev-app"
+                    }
+                  },
+                  "IamRoleLambdaExecution": {
+                    "Type": "AWS::IAM::Role",
+                    "Properties": {
+                      "AssumeRolePolicyDocument": {
+                        "Version": "2012-10-17",
+                        "Statement": [
+                          {
+                            "Effect": "Allow",
+                            "Principal": {
+                              "Service": [
+                                "lambda.amazonaws.com"
+                              ]
+                            },
+                            "Action": [
+                              "sts:AssumeRole"
+                            ]
+                          }
+                        ]
+                      },
+                      "Policies": [
+                        {
+                          "PolicyName": {
+                            "Fn::Join": [
+                              "-",
+                              [
+                                "testnoderabit",
+                                "dev",
+                                "lambda"
+                              ]
+                            ]
+                          },
+                          "PolicyDocument": {
+                            "Version": "2012-10-17",
+                            "Statement": [
+                              {
+                                "Effect": "Allow",
+                                "Action": [
+                                  "logs:CreateLogStream",
+                                  "logs:CreateLogGroup",
+                                  "logs:TagResource"
+                                ],
+                                "Resource": [
+                                  {
+                                    "Fn::Sub": "arn:${AWS::Partition}:logs:${AWS::Region}:${AWS::AccountId}:log-group:/aws/lambda/testnoderabit-dev*:*"
+                                  }
+                                ]
+                              },
+                              {
+                                "Effect": "Allow",
+                                "Action": [
+                                  "logs:PutLogEvents"
+                                ],
+                                "Resource": [
+                                  {
+                                    "Fn::Sub": "arn:${AWS::Partition}:logs:${AWS::Region}:${AWS::AccountId}:log-group:/aws/lambda/testnoderabit-dev*:*:*"
+                                  }
+                                ]
+                              },
+                              {
+                                "Effect": "Allow",
+                                "Action": [
+                                  "sqs:*"
+                                ],
+                                "Resource": "*"
+                              }
+                            ]
+                          }
+                        }
+                      ],
+                      "Path": "/",
+                      "RoleName": {
+                        "Fn::Join": [
+                          "-",
+                          [
+                            "testnoderabit",
+                            "dev",
+                            {
+                              "Ref": "AWS::Region"
+                            },
+                            "lambdaRole"
+                          ]
+                        ]
+                      }
+                    }
+                  },
+                  "AppLambdaFunction": {
+                    "Type": "AWS::Lambda::Function",
+                    "Properties": {
+                      "Code": {
+                        "S3Bucket": "serverless-framework-deployments-us-east-1-46e50384-ffb6",
+                        "S3Key": "serverless/testnoderabit/dev/1738174725268-2025-01-29T18:18:45.268Z/app.zip"
+                      },
+                      "Handler": "index.handler",
+                      "Runtime": "nodejs18.x",
+                      "FunctionName": "testnoderabit-dev-app",
+                      "MemorySize": 512,
+                      "Timeout": 120,
+                      "Environment": {
+                        "Variables": {
+                          "RABBITMQ_URL": "amqps://oqkcmynh:onlFg3llXQTFzVUofU2uf5e2JCMqyNUT@moose.rmq.cloudamqp.com/oqkcmynh",
+                          "NODE_ENV": "production"
+                        }
+                      },
+                      "Role": {
+                        "Fn::GetAtt": [
+                          "IamRoleLambdaExecution",
+                          "Arn"
+                        ]
+                      }
+                    },
+                    "DependsOn": [
+                      "AppLogGroup"
+                    ]
+                  },
+                  "AppLambdaVersionVWCvPKpZX9N7EKXql67nRQcJZrdzAzCAxWMbtAWpAY": {
+                    "Type": "AWS::Lambda::Version",
+                    "DeletionPolicy": "Retain",
+                    "Properties": {
+                      "FunctionName": {
+                        "Ref": "AppLambdaFunction"
+                      },
+                      "CodeSha256": "bvbA8wPFtYTOYFx/i1sTfby+qu5xmHo1KrOacgUF6Cw="
+                    }
+                  },
+                  "ApiGatewayRestApi": {
+                    "Type": "AWS::ApiGateway::RestApi",
+                    "Properties": {
+                      "Name": "testnoderabit-dev",
+                      "EndpointConfiguration": {
+                        "Types": [
+                          "REGIONAL"
+                        ]
+                      },
+                      "Policy": ""
+                    }
+                  },
+                  "ApiGatewayResourceProxyVar": {
+                    "Type": "AWS::ApiGateway::Resource",
+                    "Properties": {
+                      "ParentId": {
+                        "Fn::GetAtt": [
+                          "ApiGatewayRestApi",
+                          "RootResourceId"
+                        ]
+                      },
+                      "PathPart": "{proxy+}",
+                      "RestApiId": {
+                        "Ref": "ApiGatewayRestApi"
+                      }
+                    }
+                  },
+                  "ApiGatewayMethodProxyVarOptions": {
+                    "Type": "AWS::ApiGateway::Method",
+                    "Properties": {
+                      "AuthorizationType": "NONE",
+                      "HttpMethod": "OPTIONS",
+                      "MethodResponses": [
+                        {
+                          "StatusCode": "200",
+                          "ResponseParameters": {
+                            "method.response.header.Access-Control-Allow-Origin": true,
+                            "method.response.header.Access-Control-Allow-Headers": true,
+                            "method.response.header.Access-Control-Allow-Methods": true
+                          },
+                          "ResponseModels": {}
+                        }
+                      ],
+                      "RequestParameters": {},
+                      "Integration": {
+                        "Type": "MOCK",
+                        "RequestTemplates": {
+                          "application/json": "{statusCode:200}"
+                        },
+                        "ContentHandling": "CONVERT_TO_TEXT",
+                        "IntegrationResponses": [
+                          {
+                            "StatusCode": "200",
+                            "ResponseParameters": {
+                              "method.response.header.Access-Control-Allow-Origin": "'*'",
+                              "method.response.header.Access-Control-Allow-Headers": "'Content-Type,X-Amz-Date,Authorization,X-Api-Key,X-Amz-Security-Token,X-Amz-User-Agent,X-Amzn-Trace-Id'",
+                              "method.response.header.Access-Control-Allow-Methods": "'OPTIONS,DELETE,GET,HEAD,PATCH,POST,PUT'"
+                            },
+                            "ResponseTemplates": {
+                              "application/json": ""
+                            }
+                          }
+                        ]
+                      },
+                      "ResourceId": {
+                        "Ref": "ApiGatewayResourceProxyVar"
+                      },
+                      "RestApiId": {
+                        "Ref": "ApiGatewayRestApi"
+                      }
+                    }
+                  },
+                  "ApiGatewayMethodProxyVarAny": {
+                    "Type": "AWS::ApiGateway::Method",
+                    "Properties": {
+                      "HttpMethod": "ANY",
+                      "RequestParameters": {},
+                      "ResourceId": {
+                        "Ref": "ApiGatewayResourceProxyVar"
+                      },
+                      "RestApiId": {
+                        "Ref": "ApiGatewayRestApi"
+                      },
+                      "ApiKeyRequired": "<REDACTED>",
+                      "AuthorizationType": "NONE",
+                      "Integration": {
+                        "IntegrationHttpMethod": "POST",
+                        "Type": "AWS_PROXY",
+                        "Uri": {
+                          "Fn::Join": [
+                            "",
+                            [
+                              "arn:",
+                              {
+                                "Ref": "AWS::Partition"
+                              },
+                              ":apigateway:",
+                              {
+                                "Ref": "AWS::Region"
+                              },
+                              ":lambda:path/2015-03-31/functions/",
+                              {
+                                "Fn::GetAtt": [
+                                  "AppLambdaFunction",
+                                  "Arn"
+                                ]
+                              },
+                              "/invocations"
+                            ]
+                          ]
+                        }
+                      },
+                      "MethodResponses": []
+                    },
+                    "DependsOn": [
+                      "AppLambdaPermissionApiGateway"
+                    ]
+                  },
+                  "ApiGatewayDeployment1738174712087": {
+                    "Type": "AWS::ApiGateway::Deployment",
+                    "Properties": {
+                      "RestApiId": {
+                        "Ref": "ApiGatewayRestApi"
+                      },
+                      "StageName": "dev"
+                    },
+                    "DependsOn": [
+                      "ApiGatewayMethodProxyVarOptions",
+                      "ApiGatewayMethodProxyVarAny"
+                    ]
+                  },
+                  "AppLambdaPermissionApiGateway": {
+                    "Type": "AWS::Lambda::Permission",
+                    "Properties": {
+                      "FunctionName": {
+                        "Fn::GetAtt": [
+                          "AppLambdaFunction",
+                          "Arn"
+                        ]
+                      },
+                      "Action": "lambda:InvokeFunction",
+                      "Principal": "apigateway.amazonaws.com",
+                      "SourceArn": {
+                        "Fn::Join": [
+                          "",
+                          [
+                            "arn:",
+                            {
+                              "Ref": "AWS::Partition"
+                            },
+                            ":execute-api:",
+                            {
+                              "Ref": "AWS::Region"
+                            },
+                            ":",
+                            {
+                              "Ref": "AWS::AccountId"
+                            },
+                            ":",
+                            {
+                              "Ref": "ApiGatewayRestApi"
+                            },
+                            "/*/*"
+                          ]
+                        ]
+                      }
+                    }
+                  }
+                },
+                "Outputs": {
+                  "ServerlessDeploymentBucketName": {
+                    "Value": "serverless-framework-deployments-us-east-1-46e50384-ffb6",
+                    "Export": {
+                      "Name": "sls-testnoderabit-dev-ServerlessDeploymentBucketName"
+                    }
+                  },
+                  "AppLambdaFunctionQualifiedArn": {
+                    "Description": "Current Lambda function version",
+                    "Value": {
+                      "Ref": "AppLambdaVersionVWCvPKpZX9N7EKXql67nRQcJZrdzAzCAxWMbtAWpAY"
+                    },
+                    "Export": {
+                      "Name": "sls-testnoderabit-dev-AppLambdaFunctionQualifiedArn"
+                    }
+                  },
+                  "ServiceEndpoint": {
+                    "Description": "URL of the service endpoint",
+                    "Value": {
+                      "Fn::Join": [
+                        "",
+                        [
+                          "https://",
+                          {
+                            "Ref": "ApiGatewayRestApi"
+                          },
+                          ".execute-api.",
+                          {
+                            "Ref": "AWS::Region"
+                          },
+                          ".",
+                          {
+                            "Ref": "AWS::URLSuffix"
+                          },
+                          "/dev"
+                        ]
+                      ]
+                    },
+                    "Export": {
+                      "Name": "sls-testnoderabit-dev-ServiceEndpoint"
+                    }
+                  }
+                }
+              },
+              "vpc": {}
+            },
+            "package": {
+              "individually": true,
+              "patterns": [
+                "!**",
+                "src/**/*.js",
+                "index.js",
+                "package.json",
+                "!src/**/*.test.js",
+                "!src/**/__tests__/**",
+                "node_modules/amqplib/**",
+                "node_modules/express/**",
+                "node_modules/uuid/**"
+              ],
+              "artifactsS3KeyDirname": "serverless/testnoderabit/dev/code-artifacts",
+              "deploymentBucket": "serverless-framework-deployments-us-east-1-46e50384-ffb6",
+              "artifactDirectoryName": "serverless/testnoderabit/dev/1738174725268-2025-01-29T18:18:45.268Z"
+            },
+            "functions": {
+              "app": {
+                "handler": "index.handler",
+                "events": [
+                  {
+                    "http": {
+                      "path": "{proxy+}",
+                      "method": "any",
+                      "cors": {
+                        "origin": "*",
+                        "methods": [
+                          "OPTIONS",
+                          "ANY"
+                        ],
+                        "headers": [
+                          "Content-Type",
+                          "X-Amz-Date",
+                          "Authorization",
+                          "X-Api-Key",
+                          "X-Amz-Security-Token",
+                          "X-Amz-User-Agent",
+                          "X-Amzn-Trace-Id"
+                        ],
+                        "allowCredentials": "<REDACTED>"
+                      },
+                      "integration": "AWS_PROXY"
+                    }
+                  }
+                ],
+                "name": "testnoderabit-dev-app",
+                "package": {
+                  "artifact": ".serverless/app.zip"
+                },
+                "memory": 512,
+                "timeout": 120,
+                "runtime": "nodejs18.x",
+                "vpc": {},
+                "versionLogicalId": "AppLambdaVersionVWCvPKpZX9N7EKXql67nRQcJZrdzAzCAxWMbtAWpAY"
+              }
+            },
+            "resources": {
+              "Resources": {
+                "ApiGatewayRestApi": {
+                  "Type": "AWS::ApiGateway::RestApi",
+                  "Properties": {
+                    "Name": "testnoderabit-dev",
+                    "EndpointConfiguration": {
+                      "Types": [
+                        "REGIONAL"
+                      ]
+                    }
+                  }
+                }
+              },
+              "Outputs": {}
+            },
+            "plugins": [
+              "serverless-offline"
+            ]
+          },
+          "configFileDirPath": "/Users/mac/Downloads/testnodeRabit",
+          "config": {
+            "type": "sls"
+          },
+          "options": {},
+          "stage": "dev",
+          "dashboard": null,
+          "logger": {
+            "namespace": "s:core:resolver:sls",
+            "prefix": null,
+            "prefixColor": null
+          },
+          "_credentialsPromise": "<REDACTED>"
+        },
+        "resolvers": {}
+      }
+    },
+    "composeServiceName": null,
+    "servicePath": "/Users/mac/Downloads/testnodeRabit",
+    "serviceConfigFileName": "serverless.yml",
+    "service": {
+      "service": "testnoderabit",
+      "provider": {
+        "name": "aws",
+        "runtime": "nodejs18.x",
+        "region": "us-east-1",
+        "memorySize": 512,
+        "timeout": 120,
+        "iamRoleStatements": [
+          {
+            "Effect": "Allow",
+            "Action": [
+              "sqs:*"
+            ],
+            "Resource": "*"
+          }
+        ],
+        "environment": {
+          "RABBITMQ_URL": "amqps://oqkcmynh:onlFg3llXQTFzVUofU2uf5e2JCMqyNUT@moose.rmq.cloudamqp.com/oqkcmynh",
+          "NODE_ENV": "production"
+        },
+        "stage": "dev",
+        "versionFunctions": true,
+        "compiledCloudFormationTemplate": {
+          "AWSTemplateFormatVersion": "2010-09-09",
+          "Description": "The AWS CloudFormation template for this Serverless application",
+          "Resources": {
+            "AppLogGroup": {
+              "Type": "AWS::Logs::LogGroup",
+              "Properties": {
+                "LogGroupName": "/aws/lambda/testnoderabit-dev-app"
+              }
+            },
+            "IamRoleLambdaExecution": {
+              "Type": "AWS::IAM::Role",
+              "Properties": {
+                "AssumeRolePolicyDocument": {
+                  "Version": "2012-10-17",
+                  "Statement": [
+                    {
+                      "Effect": "Allow",
+                      "Principal": {
+                        "Service": [
+                          "lambda.amazonaws.com"
+                        ]
+                      },
+                      "Action": [
+                        "sts:AssumeRole"
+                      ]
+                    }
+                  ]
+                },
+                "Policies": [
+                  {
+                    "PolicyName": {
+                      "Fn::Join": [
+                        "-",
+                        [
+                          "testnoderabit",
+                          "dev",
+                          "lambda"
+                        ]
+                      ]
+                    },
+                    "PolicyDocument": {
+                      "Version": "2012-10-17",
+                      "Statement": [
+                        {
+                          "Effect": "Allow",
+                          "Action": [
+                            "logs:CreateLogStream",
+                            "logs:CreateLogGroup",
+                            "logs:TagResource"
+                          ],
+                          "Resource": [
+                            {
+                              "Fn::Sub": "arn:${AWS::Partition}:logs:${AWS::Region}:${AWS::AccountId}:log-group:/aws/lambda/testnoderabit-dev*:*"
+                            }
+                          ]
+                        },
+                        {
+                          "Effect": "Allow",
+                          "Action": [
+                            "logs:PutLogEvents"
+                          ],
+                          "Resource": [
+                            {
+                              "Fn::Sub": "arn:${AWS::Partition}:logs:${AWS::Region}:${AWS::AccountId}:log-group:/aws/lambda/testnoderabit-dev*:*:*"
+                            }
+                          ]
+                        },
+                        {
+                          "Effect": "Allow",
+                          "Action": [
+                            "sqs:*"
+                          ],
+                          "Resource": "*"
+                        }
+                      ]
+                    }
+                  }
+                ],
+                "Path": "/",
+                "RoleName": {
+                  "Fn::Join": [
+                    "-",
+                    [
+                      "testnoderabit",
+                      "dev",
+                      {
+                        "Ref": "AWS::Region"
+                      },
+                      "lambdaRole"
+                    ]
+                  ]
+                }
+              }
+            },
+            "AppLambdaFunction": {
+              "Type": "AWS::Lambda::Function",
+              "Properties": {
+                "Code": {
+                  "S3Bucket": "serverless-framework-deployments-us-east-1-46e50384-ffb6",
+                  "S3Key": "serverless/testnoderabit/dev/1738174725268-2025-01-29T18:18:45.268Z/app.zip"
+                },
+                "Handler": "index.handler",
+                "Runtime": "nodejs18.x",
+                "FunctionName": "testnoderabit-dev-app",
+                "MemorySize": 512,
+                "Timeout": 120,
+                "Environment": {
+                  "Variables": {
+                    "RABBITMQ_URL": "amqps://oqkcmynh:onlFg3llXQTFzVUofU2uf5e2JCMqyNUT@moose.rmq.cloudamqp.com/oqkcmynh",
+                    "NODE_ENV": "production"
+                  }
+                },
+                "Role": {
+                  "Fn::GetAtt": [
+                    "IamRoleLambdaExecution",
+                    "Arn"
+                  ]
+                }
+              },
+              "DependsOn": [
+                "AppLogGroup"
+              ]
+            },
+            "AppLambdaVersionVWCvPKpZX9N7EKXql67nRQcJZrdzAzCAxWMbtAWpAY": {
+              "Type": "AWS::Lambda::Version",
+              "DeletionPolicy": "Retain",
+              "Properties": {
+                "FunctionName": {
+                  "Ref": "AppLambdaFunction"
+                },
+                "CodeSha256": "bvbA8wPFtYTOYFx/i1sTfby+qu5xmHo1KrOacgUF6Cw="
+              }
+            },
+            "ApiGatewayRestApi": {
+              "Type": "AWS::ApiGateway::RestApi",
+              "Properties": {
+                "Name": "testnoderabit-dev",
+                "EndpointConfiguration": {
+                  "Types": [
+                    "REGIONAL"
+                  ]
+                },
+                "Policy": ""
+              }
+            },
+            "ApiGatewayResourceProxyVar": {
+              "Type": "AWS::ApiGateway::Resource",
+              "Properties": {
+                "ParentId": {
+                  "Fn::GetAtt": [
+                    "ApiGatewayRestApi",
+                    "RootResourceId"
+                  ]
+                },
+                "PathPart": "{proxy+}",
+                "RestApiId": {
+                  "Ref": "ApiGatewayRestApi"
+                }
+              }
+            },
+            "ApiGatewayMethodProxyVarOptions": {
+              "Type": "AWS::ApiGateway::Method",
+              "Properties": {
+                "AuthorizationType": "NONE",
+                "HttpMethod": "OPTIONS",
+                "MethodResponses": [
+                  {
+                    "StatusCode": "200",
+                    "ResponseParameters": {
+                      "method.response.header.Access-Control-Allow-Origin": true,
+                      "method.response.header.Access-Control-Allow-Headers": true,
+                      "method.response.header.Access-Control-Allow-Methods": true
+                    },
+                    "ResponseModels": {}
+                  }
+                ],
+                "RequestParameters": {},
+                "Integration": {
+                  "Type": "MOCK",
+                  "RequestTemplates": {
+                    "application/json": "{statusCode:200}"
+                  },
+                  "ContentHandling": "CONVERT_TO_TEXT",
+                  "IntegrationResponses": [
+                    {
+                      "StatusCode": "200",
+                      "ResponseParameters": {
+                        "method.response.header.Access-Control-Allow-Origin": "'*'",
+                        "method.response.header.Access-Control-Allow-Headers": "'Content-Type,X-Amz-Date,Authorization,X-Api-Key,X-Amz-Security-Token,X-Amz-User-Agent,X-Amzn-Trace-Id'",
+                        "method.response.header.Access-Control-Allow-Methods": "'OPTIONS,DELETE,GET,HEAD,PATCH,POST,PUT'"
+                      },
+                      "ResponseTemplates": {
+                        "application/json": ""
+                      }
+                    }
+                  ]
+                },
+                "ResourceId": {
+                  "Ref": "ApiGatewayResourceProxyVar"
+                },
+                "RestApiId": {
+                  "Ref": "ApiGatewayRestApi"
+                }
+              }
+            },
+            "ApiGatewayMethodProxyVarAny": {
+              "Type": "AWS::ApiGateway::Method",
+              "Properties": {
+                "HttpMethod": "ANY",
+                "RequestParameters": {},
+                "ResourceId": {
+                  "Ref": "ApiGatewayResourceProxyVar"
+                },
+                "RestApiId": {
+                  "Ref": "ApiGatewayRestApi"
+                },
+                "ApiKeyRequired": "<REDACTED>",
+                "AuthorizationType": "NONE",
+                "Integration": {
+                  "IntegrationHttpMethod": "POST",
+                  "Type": "AWS_PROXY",
+                  "Uri": {
+                    "Fn::Join": [
+                      "",
+                      [
+                        "arn:",
+                        {
+                          "Ref": "AWS::Partition"
+                        },
+                        ":apigateway:",
+                        {
+                          "Ref": "AWS::Region"
+                        },
+                        ":lambda:path/2015-03-31/functions/",
+                        {
+                          "Fn::GetAtt": [
+                            "AppLambdaFunction",
+                            "Arn"
+                          ]
+                        },
+                        "/invocations"
+                      ]
+                    ]
+                  }
+                },
+                "MethodResponses": []
+              },
+              "DependsOn": [
+                "AppLambdaPermissionApiGateway"
+              ]
+            },
+            "ApiGatewayDeployment1738174712087": {
+              "Type": "AWS::ApiGateway::Deployment",
+              "Properties": {
+                "RestApiId": {
+                  "Ref": "ApiGatewayRestApi"
+                },
+                "StageName": "dev"
+              },
+              "DependsOn": [
+                "ApiGatewayMethodProxyVarOptions",
+                "ApiGatewayMethodProxyVarAny"
+              ]
+            },
+            "AppLambdaPermissionApiGateway": {
+              "Type": "AWS::Lambda::Permission",
+              "Properties": {
+                "FunctionName": {
+                  "Fn::GetAtt": [
+                    "AppLambdaFunction",
+                    "Arn"
+                  ]
+                },
+                "Action": "lambda:InvokeFunction",
+                "Principal": "apigateway.amazonaws.com",
+                "SourceArn": {
+                  "Fn::Join": [
+                    "",
+                    [
+                      "arn:",
+                      {
+                        "Ref": "AWS::Partition"
+                      },
+                      ":execute-api:",
+                      {
+                        "Ref": "AWS::Region"
+                      },
+                      ":",
+                      {
+                        "Ref": "AWS::AccountId"
+                      },
+                      ":",
+                      {
+                        "Ref": "ApiGatewayRestApi"
+                      },
+                      "/*/*"
+                    ]
+                  ]
+                }
+              }
+            }
+          },
+          "Outputs": {
+            "ServerlessDeploymentBucketName": {
+              "Value": "serverless-framework-deployments-us-east-1-46e50384-ffb6",
+              "Export": {
+                "Name": "sls-testnoderabit-dev-ServerlessDeploymentBucketName"
+              }
+            },
+            "AppLambdaFunctionQualifiedArn": {
+              "Description": "Current Lambda function version",
+              "Value": {
+                "Ref": "AppLambdaVersionVWCvPKpZX9N7EKXql67nRQcJZrdzAzCAxWMbtAWpAY"
+              },
+              "Export": {
+                "Name": "sls-testnoderabit-dev-AppLambdaFunctionQualifiedArn"
+              }
+            },
+            "ServiceEndpoint": {
+              "Description": "URL of the service endpoint",
+              "Value": {
+                "Fn::Join": [
+                  "",
+                  [
+                    "https://",
+                    {
+                      "Ref": "ApiGatewayRestApi"
+                    },
+                    ".execute-api.",
+                    {
+                      "Ref": "AWS::Region"
+                    },
+                    ".",
+                    {
+                      "Ref": "AWS::URLSuffix"
+                    },
+                    "/dev"
+                  ]
+                ]
+              },
+              "Export": {
+                "Name": "sls-testnoderabit-dev-ServiceEndpoint"
+              }
+            }
+          }
+        },
+        "vpc": {}
+      },
+      "package": {
+        "individually": true,
+        "patterns": [
+          "!**",
+          "src/**/*.js",
+          "index.js",
+          "package.json",
+          "!src/**/*.test.js",
+          "!src/**/__tests__/**",
+          "node_modules/amqplib/**",
+          "node_modules/express/**",
+          "node_modules/uuid/**"
+        ],
+        "artifactsS3KeyDirname": "serverless/testnoderabit/dev/code-artifacts",
+        "deploymentBucket": "serverless-framework-deployments-us-east-1-46e50384-ffb6",
+        "artifactDirectoryName": "serverless/testnoderabit/dev/1738174725268-2025-01-29T18:18:45.268Z"
+      },
+      "functions": {
+        "app": {
+          "handler": "index.handler",
+          "events": [
+            {
+              "http": {
+                "path": "{proxy+}",
+                "method": "any",
+                "cors": {
+                  "origin": "*",
+                  "methods": [
+                    "OPTIONS",
+                    "ANY"
+                  ],
+                  "headers": [
+                    "Content-Type",
+                    "X-Amz-Date",
+                    "Authorization",
+                    "X-Api-Key",
+                    "X-Amz-Security-Token",
+                    "X-Amz-User-Agent",
+                    "X-Amzn-Trace-Id"
+                  ],
+                  "allowCredentials": "<REDACTED>"
+                },
+                "integration": "AWS_PROXY"
+              }
+            }
+          ],
+          "name": "testnoderabit-dev-app",
+          "package": {
+            "artifact": ".serverless/app.zip"
+          },
+          "memory": 512,
+          "timeout": 120,
+          "runtime": "nodejs18.x",
+          "vpc": {},
+          "versionLogicalId": "AppLambdaVersionVWCvPKpZX9N7EKXql67nRQcJZrdzAzCAxWMbtAWpAY"
+        }
+      },
+      "resources": {
+        "Resources": {
+          "ApiGatewayRestApi": {
+            "Type": "AWS::ApiGateway::RestApi",
+            "Properties": {
+              "Name": "testnoderabit-dev",
+              "EndpointConfiguration": {
+                "Types": [
+                  "REGIONAL"
+                ]
+              }
+            }
+          }
+        },
+        "Outputs": {}
+      },
+      "plugins": [
+        "serverless-offline"
+      ]
+    },
+    "serviceRawFile": "service: testnoderabit\n\nprovider:\n  name: aws\n  runtime: nodejs18.x\n  region: us-east-1\n  memorySize: 512\n  timeout: 120\n  iamRoleStatements:\n    - Effect: Allow\n      Action:\n        - sqs:*\n      Resource: \"*\"\n  environment:\n    RABBITMQ_URL: \"amqps://oqkcmynh:onlFg3llXQTFzVUofU2uf5e2JCMqyNUT@moose.rmq.cloudamqp.com/oqkcmynh\"\n    NODE_ENV: \"production\"\n\npackage:\n  individually: true\n  patterns:\n    - '!**'\n    - 'src/**/*.js'\n    - 'index.js'\n    - 'package.json'\n    - '!src/**/*.test.js'\n    - '!src/**/__tests__/**'\n    - 'node_modules/amqplib/**'\n    - 'node_modules/express/**'\n    - 'node_modules/uuid/**'\n\nfunctions:\n  app:\n    handler: index.handler\n    events:\n      - http:\n          path: /{proxy+}\n          method: ANY\n          cors: true\n\nresources:\n  Resources:\n    ApiGatewayRestApi:\n      Type: AWS::ApiGateway::RestApi\n      Properties:\n        Name: testnoderabit-dev\n        EndpointConfiguration:\n          Types:\n            - REGIONAL\nplugins:\n  - serverless-offline\n\n\n# ---------------------------------------------------------------------------------\n\n\n# service: testnoderabit\n\n# plugins:\n#   - serverless-offline\n\n# provider:\n#   name: aws\n#   runtime: nodejs18.x  \n#   region: us-east-1\n#   memorySize: 512\n#   timeout: 900\n\n# package:\n#   individually: true\n#   patterns:\n#     - '!**'\n#     - 'src/**/*.js'\n#     - 'index.js'\n#     - 'package.json'\n#     - '!src/**/*.test.js'\n#     - '!src/**/__tests__/**'\n#     - 'node_modules/amqplib/**'\n#     - 'node_modules/express/**'\n#     - 'node_modules/uuid/**'\n\n# functions:\n#   app:\n#     handler: index.handler\n#     events:\n#       - http:\n#           path: /api/{proxy+}\n#           method: ANY\n#           cors:\n#             origin: '*'\n#             headers:\n#               - Content-Type\n#               - X-Amz-Date\n#               - Authorization\n#               - X-Api-Key\n#               - X-Amz-Security-Token\n#               - X-Amz-User-Agent\n#             allowMethods:\n#               - GET\n#               - POST\n#               - PUT\n#               - DELETE\n#               - OPTIONS\n#             allowCredentials: false\n#     environment:\n#       RABBITMQ_URL: 'your-cloudamqp-url'\n\n# custom:\n#   allowedHeaders:\n#     - Accept\n#     - Content-Type\n#     - Authorization\n\n# ---------------------------------------------------------------------------------\n\n# service: testnoderabit\n\n# plugins:\n#   #for offline dev and testing...\n#   - serverless-offline\n\n# provider:\n#   name: aws\n#   runtime: nodejs18.x  \n#   region: us-east-1\n#   memorySize: 512\n#   timeout: 900\n#   vpc:\n#     securityGroupIds:\n#       - sg-xxxxxxxxxxxxxxxxx\n#     subnetIds:\n#       - subnet-xxxxxxxxxxxxxxxxx\n# custom:\n#   serverless-offline:\n#     noPrependStageInUrl: true #no stage names in URLs...\n#     useChildProcesses: true #use child processes for better isolation...\n#     useWorkerThreads: false\n\n# package:\n#   include:\n#     - src/**/*\n#     - index.js\n#     - package.json\n#     - node_modules/**\n\n# #lambda function defs...\n# functions:\n#   app:\n#     handler: index.handler\n#     events:\n#       - http:\n#           path: /{proxy+}\n#           method: ANY\n#     environment:\n#        RABBITMQ_URL: 'amqps://oqkcmynh:onlFg3llXQTFzVUofU2uf5e2JCMqyNUT@moose.rmq.cloudamqp.com/oqkcmynh'\n#       #  RABBITMQ_USERNAME: 'your-cloudamqp-username'\n#       #  RABBITMQ_PASSWORD: 'your-cloudamqp-password'\n",
+    "command": [
+      "deploy"
+    ],
+    "options": {},
+    "error": null,
+    "params": {},
+    "machineId": "51e3f175dad12928695456894c574737",
+    "stage": "dev",
+    "accessKeyV2": "<REDACTED>",
+    "accessKeyV1": "<REDACTED>",
+    "orgId": "d8423dda-f389-46eb-95aa-d67dfb6905d9",
+    "orgName": "codexinc",
+    "userId": "LflS07klwyZmtf8BJB",
+    "dashboard": {
+      "isEnabledForService": false,
+      "requiredAuthentication": false,
+      "orgFeaturesInUse": null,
+      "orgObservabilityIntegrations": null,
+      "serviceAppId": null,
+      "serviceProvider": null,
+      "instanceParameters": null
+    },
+    "userName": "codexinc",
+    "subscription": null,
+    "userEmail": "engrzahid612@gmail.com",
+    "serviceProviderAwsRegion": "us-east-1",
+    "serviceProviderAwsCredentials": "<REDACTED>",
+    "serviceProviderAwsAccountId": "637423221707",
+    "projectType": "traditional",
+    "versionSf": "4.4.19",
+    "serviceProviderAwsCfStackName": "testnoderabit-dev",
+    "integrations": {},
+    "serviceUniqueId": "arn:aws:cloudformation:us-east-1:637423221707:stack/testnoderabit-dev/c4eb3990-ddd4-11ef-a8a1-12545bd9e845",
+    "serviceProviderAwsCfStackId": "arn:aws:cloudformation:us-east-1:637423221707:stack/testnoderabit-dev/c4eb3990-ddd4-11ef-a8a1-12545bd9e845",
+    "serviceProviderAwsCfStackCreated": "2025-01-29T00:05:37.935Z",
+    "serviceProviderAwsCfStackUpdated": "2025-01-29T18:18:59.525Z",
+    "serviceProviderAwsCfStackStatus": "UPDATE_COMPLETE",
+    "serviceProviderAwsCfStackOutputs": [
+      {
+        "OutputKey": "AppLambdaFunctionQualifiedArn",
+        "OutputValue": "arn:aws:lambda:us-east-1:637423221707:function:testnoderabit-dev-app:23",
+        "Description": "Current Lambda function version",
+        "ExportName": "sls-testnoderabit-dev-AppLambdaFunctionQualifiedArn"
+      },
+      {
+        "OutputKey": "ServiceEndpoint",
+        "OutputValue": "https://nwzo9vln1k.execute-api.us-east-1.amazonaws.com/dev",
+        "Description": "URL of the service endpoint",
+        "ExportName": "sls-testnoderabit-dev-ServiceEndpoint"
+      },
+      {
+        "OutputKey": "ServerlessDeploymentBucketName",
+        "OutputValue": "serverless-framework-deployments-us-east-1-46e50384-ffb6",
+        "ExportName": "sls-testnoderabit-dev-ServerlessDeploymentBucketName"
+      }
+    ]
+  }
+}
