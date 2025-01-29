@@ -1,22 +1,21 @@
 const serverless = require('serverless-http');
 const app = require('./src/app');
-const { connectQueue } = require('./src/services/queue');
+// const { connectQueue } = require('./src/services/queue');
 
-let connection;
+// let connection;
 
 const handler = async (event, context) => {
     context.callbackWaitsForEmptyEventLoop = false;
     
-    if (!connection) {
-        connection = await connectQueue();
-    }
+    // if (!connection) {
+    //     connection = await connectQueue();
+    // }
     
     const serverlessHandler = serverless(app);
     return await serverlessHandler(event, context);
 };
 
 module.exports = { handler };
-
 
 // Export the Lambda handlermodule.exports.handler = handler;// const { connectQueue, setupQueues, sendLinksToQueue } = require('./src/services/queue');
 // const { extractWebsiteInformation } = require('./src/utils/helpers/htmlParser');

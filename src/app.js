@@ -3,9 +3,10 @@ const cors = require('cors');
 const cluster = require('cluster')
 const numCPUs = require('os').cpus().length
 const rateLimit = require('express-rate-limit')
-const { connectQueue, getChannel } = require('./services/queue')
-const { setupScrapingQueueConsumer } = require('./services/queue/consumer')
-const { PORT } = require('./config/rabbitmq')
+// const { connectQueue, getChannel } = require('./services/queue')
+// const { setupScrapingQueueConsumer } = require('./services/queue/consumer')
+// const { PORT } = require('./config/rabbitmq')
+const PORT = process.env.PORT || 3000;
 
 const app = express();
 
@@ -18,12 +19,12 @@ const scrapingRoutes = require('./routes/scrapWebsite');
 app.use('/api', scrapingRoutes);
 
 // Initialize queue connection
-const initQueue = async () => {
-    await connectQueue();
-};
+// const initQueue = async () => {
+//     await connectQueue();
+// };
 
 // Start queue initialization
-initQueue().catch(console.error);
+// initQueue().catch(console.error);
 
 // Only run clustering in production
 if (cluster.isMaster && process.env.NODE_ENV === 'production') {
@@ -56,55 +57,51 @@ if (cluster.isMaster && process.env.NODE_ENV === 'production') {
   app.get('/health', (req, res) => res.status(200).send('OK'))
   
   // Enhanced initialization
-  async function initialize() {
-    try {
-      await connectQueue()
-      const channel = getChannel()
+  // async function initialize() {
+  //   try {
+  //     await connectQueue()
+  //     const channel = getChannel()
       
-      if (channel) {
-        // Configure queue with proper settings
-        await channel.assertQueue('scraping_queue', {
-          durable: true,
-          deadLetterExchange: 'dlx',
-          messageTtl: 24 * 60 * 60 * 1000, // 24 hours TTL
-          maxLength: 1000000 // Max queue length
-        })
+  //     if (channel) {
+  //       // Configure queue with proper settings
+  //       await channel.assertQueue('scraping_queue', {
+  //         durable: true,
+  //         deadLetterExchange: 'dlx',
+  //         messageTtl: 24 * 60 * 60 * 1000, // 24 hours TTL
+  //         maxLength: 1000000 // Max queue length
+  //       })
 
-        // Setup dead letter exchange
-        await channel.assertExchange('dlx', 'direct', { durable: true })
-        await channel.assertQueue('dead_letter_queue', { durable: true })
-        await channel.bindQueue('dead_letter_queue', 'dlx', 'scraping_queue')
+  //       // Setup dead letter exchange
+  //       await channel.assertExchange('dlx', 'direct', { durable: true })
+  //       await channel.assertQueue('dead_letter_queue', { durable: true })
+  //       await channel.bindQueue('dead_letter_queue', 'dlx', 'scraping_queue')
 
-        // Prefetch control - process 100 messages at a time per consumer
-        channel.prefetch(100)
+  //       // Prefetch control - process 100 messages at a time per consumer
+  //       channel.prefetch(100)
         
-        await setupScrapingQueueConsumer()
+  //       await setupScrapingQueueConsumer()
         
-        console.log('Queue initialization completed')
-      } else {
-        console.error('Failed to initialize - channel not available')
-        setTimeout(initialize, 10000)
-      }
-    } catch (error) {
-      console.error('Initialization error:', error)
-      setTimeout(initialize, 10000)
-    }
-  }
+  //       console.log('Queue initialization completed')
+  //     } else {
+  //       console.error('Failed to initialize - channel not available')
+  //       setTimeout(initialize, 10000)
+  //     }
+  //   } catch (error) {
+  //     console.error('Initialization error:', error)
+  //     setTimeout(initialize, 10000)
+  //   }
+  // }
 
   // Graceful shutdown
   const shutdown = async () => {
     console.log('Shutting down gracefully...')
-    const channel = getChannel()
-    if (channel) {
-      await channel.close()
-    }
     process.exit(0)
   }
 
   process.on('SIGTERM', shutdown)
   process.on('SIGINT', shutdown)
 
-  initialize()
+  // initialize()
 
   app.listen(PORT, () => {
     console.log(`Worker ${process.pid} running on port ${PORT}`)

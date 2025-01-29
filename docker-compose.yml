@@ -5,9 +5,9 @@ services:
       - '5002:5000'
     environment:
       - NODE_ENV=production
-    depends_on:
-      rabbitmq:
-        condition: service_healthy
+    # depends_on:
+    #   rabbitmq:
+    #     condition: service_healthy
     restart: always
     healthcheck:
       test: ['CMD', 'curl', '-f', 'http://localhost:5000/health']
@@ -17,18 +17,18 @@ services:
     volumes:
       - ./src:/usr/src/app/src
 
-  rabbitmq:
-    image: rabbitmq:3-management
-    ports:
-      - '5672:5672'
-      - '15672:15672'
-    volumes:
-      - rabbitmq_data:/var/lib/rabbitmq
-    healthcheck:
-      test: ['CMD', 'rabbitmq-diagnostics', '-q', 'ping']
-      interval: 10s
-      timeout: 5s
-      retries: 5
+  # rabbitmq:
+  #   image: rabbitmq:3-management
+  #   ports:
+  #     - '5672:5672'
+  #     - '15672:15672'
+  #   volumes:
+  #     - rabbitmq_data:/var/lib/rabbitmq
+  #   healthcheck:
+  #     test: ['CMD', 'rabbitmq-diagnostics', '-q', 'ping']
+  #     interval: 10s
+  #     timeout: 5s
+  #     retries: 5
 
-volumes:
-  rabbitmq_data:
+# volumes:
+#   rabbitmq_data:
