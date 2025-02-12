@@ -18,9 +18,9 @@ router.post('/scrapWebsite', async (req, res) => {
   const linksArray = links.split(',').map(link => link.trim())
   
   try {
-    const results = await Promise.all(linksArray.map(async (link) => {
+    const results = await Promise.all(linksArray.map(link => {
       const webDetails = { link, domains, extractOptions }
-      return await processLink(webDetails)
+      return processLink(webDetails)
     }))
 
     res.json({ data: results })
