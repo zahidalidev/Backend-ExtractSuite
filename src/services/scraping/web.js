@@ -13,25 +13,47 @@ module.exports.websiteScrappingService = async (webDetails, isBusiness) => {
     let { companyServices, keyIndicators, aboutList, contacts, addresses, socialLinks, logo } =
       await extractWebsiteInformation(websiteUrl, isBusiness, domains, extractOptions)
 
-    companyServices = trimContentUptoMax(
-      companyServices.map((item) => item?.replace(/\n|\r/g, '').trim()),
-      10000
-    )
+    const cleanedCompanyServices = []
+    for (const item of companyServices || []) {
+      if (item) cleanedCompanyServices.push(item.replace(/\n|\r/g, '').trim())
+    }
+    companyServices = trimContentUptoMax(cleanedCompanyServices, 10000)
 
-    keyIndicators = trimContentUptoMax(
-      keyIndicators.map((item) => item?.replace(/\n|\r/g, '').trim())
-    )
+    const cleanedKeyIndicators = []
+    for (const item of keyIndicators || []) {
+      if (item) cleanedKeyIndicators.push(item.replace(/\n|\r/g, '').trim())
+    }
+    keyIndicators = trimContentUptoMax(cleanedKeyIndicators)
 
-    aboutList = trimContentUptoMax(aboutList.map((item) => item.replace(/\n|\r/g, '').trim()))
-    addresses = trimContentUptoMax(addresses.map((item) => item.replace(/\n|\r/g, '').trim()))
-    contacts = contacts.map((item) => ({
-      ...item,
-      text: item.text.replace(/\n|\r/g, '').trim(),
-    }))
+    const cleanedAboutList = []
+    for (const item of aboutList || []) {
+      cleanedAboutList.push(item.replace(/\n|\r/g, '').trim())
+    }
+    aboutList = trimContentUptoMax(cleanedAboutList)
+
+    const cleanedAddresses = []
+    for (const item of addresses || []) {
+      cleanedAddresses.push(item.replace(/\n|\r/g, '').trim())
+    }
+    addresses = trimContentUptoMax(cleanedAddresses)
+
+    const phoneContacts = []
+    const emails = []
+    if (Array.isArray(contacts)) {
+      for (const item of contacts) {
+        const cleanedText = item.text.replace(/\n|\r/g, '').trim()
+        if (item.type === 'phone') {
+          phoneContacts.push(cleanedText)
+        } else if (item.type === 'email') {
+          emails.push(cleanedText)
+        }
+      }
+    }
 
     console.log('\n\n\nFrom Scrapping')
     console.log('Full aboutList List:', aboutList)
-    console.log('Full contacts List:', contacts)
+    console.log('Full phone contacts List:', phoneContacts)
+    console.log('Full emails List:', emails)
     console.log('Full addresses List:', addresses)
     console.log('The company offers and buys:22', companyServices)
     console.log('Key Indicators', keyIndicators)
@@ -40,7 +62,8 @@ module.exports.websiteScrappingService = async (webDetails, isBusiness) => {
 
     return {
       aboutList,
-      contacts,
+      phoneContacts,
+      emails,
       addresses,
       companyServices,
       keyIndicators,

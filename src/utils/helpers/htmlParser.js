@@ -1,4 +1,3 @@
-
 const axios = require('axios');
 const { load } = require('cheerio');
 const url = require('url');
@@ -20,16 +19,22 @@ const NumberOfEmployees = {
 };
 
 const findStartIndex = (bulletPoints, keyword) => {
+  if (!bulletPoints || !Array.isArray(bulletPoints)) return -1;
   const index = bulletPoints.findIndex(
     (point) => point.trim().toLowerCase() === keyword.toLowerCase(),
   );
   return index !== -1 ? index + 1 : -1;
 };
 
-const findEndIndex = (bulletPoints, startIndex, nextKeywords) => {
-  const nextKeywordIndices = nextKeywords
-    .map((keyword) => findStartIndex(bulletPoints, keyword))
-    .filter((index) => index !== -1);
+const findEndIndex = (bulletPoints, startIndex, nextKeywords = []) => {
+  if (!bulletPoints || !Array.isArray(bulletPoints)) return -1;
+  const nextKeywordIndices = [];
+  for (const keyword of nextKeywords) {
+    const index = findStartIndex(bulletPoints, keyword);
+    if (index !== -1) {
+      nextKeywordIndices.push(index);
+    }
+  }
   const endIndex =
     nextKeywordIndices.length > 0
       ? Math.min(...nextKeywordIndices) - 1
@@ -38,10 +43,16 @@ const findEndIndex = (bulletPoints, startIndex, nextKeywords) => {
 };
 
 const extractSection = (bulletPoints, startIndex, endIndex) => {
-  return bulletPoints
-    .slice(startIndex, endIndex)
-    .map((point) => point.replace(/^\d+\.\s*|-/g, '').trim())
-    .filter((point) => point);
+  if (!bulletPoints || !Array.isArray(bulletPoints)) return [];
+  const result = [];
+  const slicedPoints = bulletPoints.slice(startIndex, endIndex);
+  for (const point of slicedPoints) {
+    const cleanedPoint = point.replace(/^\d+\.\s*|-/g, '').trim();
+    if (cleanedPoint) {
+      result.push(cleanedPoint);
+    }
+  }
+  return result;
 };
 
 const checkEmployeeCountFromString = (str) => {
@@ -62,12 +73,31 @@ const checkEmployeeCount = (number) => {
 };
 
 const extractContactInfo = (text, domains) => {
-  const contacts = [];
+  const phoneContacts = [];
+  const emailContacts = [];
   let match;
   const existingValues = new Set();
 
   // modify this regex according to domains
   const contactRegex = /((?:\+\d{1,2}\s?)?\(?\d{3}\)?[\s.-]?\d{3}[\s.-]?\d{4})|([a-zA-Z0-9._-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,})/g
+  // @gmail: \b[A-Za-z0-9._%+-]+@gmail\b
+  // @yahoo: \b[A-Za-z0-9._%+-]+@yahoo\b
+  // @domain: \b[A-Za-z0-9._%+-]+@domain\b
+  // info@: \binfo@[A-Za-z0-9.-]+\.[A-Za-z]{2,}\b
+  // sales@: \bsales@[A-Za-z0-9.-]+\.[A-Za-z]{2,}\b
+  // support@: \bsupport@[A-Za-z0-9.-]+\.[A-Za-z]{2,}\b
+  // contact@: \bcontact@[A-Za-z0-9.-]+\.[A-Za-z]{2,}\b
+  // admin@: \badmin@[A-Za-z0-9.-]+\.[A-Za-z]{2,}\b
+  // editor@: \beditor@[A-Za-z0-9.-]+\.[A-Za-z]{2,}\b
+  // marketing@: \bmarketing@[A-Za-z0-9.-]+\.[A-Za-z]{2,}\b
+  // feedback@: \bfeedback@[A-Za-z0-9.-]+\.[A-Za-z]{2,}\b
+  // hr@: \bhr@[A-Za-z0-9.-]+\.[A-Za-z]{2,}\b
+  // team@: \bteam@[A-Za-z0-9.-]+\.[A-Za-z]{2,}\b
+  // customerservice@: \bcustomerservice@[A-Za-z0-9.-]+\.[A-Za-z]{2,}\b
+  // office@: \boffice@[A-Za-z0-9.-]+\.[A-Za-z]{2,}\b
+  // mail@: \bmail@[A-Za-z0-9.-]+\.[A-Za-z]{2,}\b
+  // enquiries@: \benquiries@[A-Za-z0-9.-]+\.[A-Za-z]{2,}\b
+  // @hotmail: \b[A-Za-z0-9._%+-]+@hotmail\b
 
   while ((match = contactRegex.exec(text)) !== null) {
     const contact = match[0];
@@ -77,13 +107,13 @@ const extractContactInfo = (text, domains) => {
       const truncatedText = text.replace(/\n|\r/g, '').trim().substring(0, 50);
       
       if (contact.includes('@')) {
-        contacts.push({
+        emailContacts.push({
           type: 'Email',
           value: contact,
           text: truncatedText,
         });
       } else {
-        contacts.push({
+        phoneContacts.push({
           type: 'Phone',
           value: contact,
           text: truncatedText,
@@ -91,11 +121,11 @@ const extractContactInfo = (text, domains) => {
       }
     }
   }
-  return contacts;
+  return { phoneContacts, emailContacts };
 };
 
 const extractBulletPoints = (response) => {
-  if (response.length === 0) {
+  if (!response || !response.choices || !response.choices[0] || !response.choices[0].message || !response.choices[0].message.content) {
     return {
       services: [],
       buys: [],
@@ -192,35 +222,55 @@ const extractRelevantContent = ($, serviceKeywords, aboutKeywords, isAbout, isBu
   const services = [];
   const indicators = [];
   const about = [];
-  const contact = [];
+  const phoneContacts = [];
+  const emailContacts = [];
   const address = [];
+
+  if (!$ || !selectors) return { services, indicators, about, phoneContacts, emailContacts, address };
 
   selectors.forEach((selector) => {
     $(selector).each((_, element) => {
       const isLastChildDiv = selector === 'div' && $(element).is('div') && $(element).is(':last-child') && !$(element).find('div').length;
       const text = $(element).text().trim();
 
-      // conditions for extractOptions
       if (selector !== 'div') {
-        if (containServiceKeywords(text, serviceKeywords)) services.push(text);
-
-        if (!isBusiness && (containServiceKeywords(text, aboutKeywords) || isAbout)) about.push(text);
-        
-        const indicators = extractKeyIndicators(text);
-        if (!isBusiness && indicators.length > 0) indicators.push(...indicators);
-        
-        const contacts = extractContactInfo(text, domains);
-        if (!isBusiness && contacts.length > 0) contact.push(...contacts);
+        if (extractOptions.services && containServiceKeywords(text, serviceKeywords)) {
+          services.push(text);
+        }
+        if (extractOptions.about && !isBusiness && (containServiceKeywords(text, aboutKeywords) || isAbout)) {
+          about.push(text);
+        }
+        if (extractOptions.indicators && !isBusiness) {
+          const extractedIndicators = extractKeyIndicators(text);
+          if (extractedIndicators.length > 0) {
+            indicators.push(...extractedIndicators);
+          }
+        }
+        if (extractOptions.contacts && !isBusiness) {
+          const { phoneContacts: phones, emailContacts: emails } = extractContactInfo(text, domains);
+          if (phones.length > 0) {
+            for (const phone of phones) {
+              phoneContacts.push(phone);
+            }
+          }
+          if (emails.length > 0) {
+            for (const email of emails) {
+              emailContacts.push(email);
+            }
+          }
+        }
       }
-
-      if (isLastChildDiv && text.match(addressRegex) && !isBusiness) address.push(text);
+      if (extractOptions.addresses && isLastChildDiv && text.match(addressRegex) && !isBusiness) {
+        address.push(text);
+      }
     });
   });
 
-  return { services, indicators, about, contact, address };
+  return { services, indicators, about, phoneContacts, emailContacts, address };
 };
 
 const trimContentUptoMax = (text, length = 5000) => {
+  if (!Array.isArray(text)) return [];
   let totalLength = text.join('').length;
   if (totalLength > length) {
     let charsToRemove = totalLength - 5000;
@@ -245,57 +295,75 @@ const extractKeyIndicators = (text) => {
 };
 
 const containServiceKeywords = (text, keywords) => {
+  if (!text || !keywords || !Array.isArray(keywords)) return false;
   text = text.toLowerCase();
-  return keywords.some((keyword) => text.includes(keyword.toLowerCase()));
+  for (const keyword of keywords) {
+    if (text.includes(keyword.toLowerCase())) return true;
+  }
+  return false;
 };
 
-const extractPhoneNumberAndEmail = (contactList) => {
-  let phoneNumber = '';
-  let email = '';
-
-  for (let i = 0; i < contactList.length; i++) {
-    const contact = contactList[i];
-    if (contact.type === 'Phone' && !phoneNumber) {
-      phoneNumber = contact.value;
-      contactList.splice(i, 1);
-      i--;
-    } else if (contact.type === 'Email' && !email) {
-      email = contact.value;
-      contactList.splice(i, 1);
-      i--;
-    }
-    if (phoneNumber && email) break;
-  }
-
+const extractPhoneNumberAndEmail = (phoneContacts, emailContacts) => {
+  let phoneNumber = phoneContacts && phoneContacts.length > 0 ? phoneContacts[0].value : '';
+  let email = emailContacts && emailContacts.length > 0 ? emailContacts[0].value : '';
   return { phoneNumber, email };
 };
 
 const getUniqueIds = (idArray) => {
+  if (!Array.isArray(idArray)) return [];
   const uniqueSet = new Set();
   const uniqueArray = [];
 
-  idArray.forEach((id) => {
+  for (const id of idArray) {
     if (!uniqueSet.has(id.toString())) {
       uniqueSet.add(id.toString());
       uniqueArray.push(id);
     }
-  });
+  }
 
   return uniqueArray;
 };
 
-const extractWebsiteInformation = async (websiteUrl, isBusiness, domains, extractOptions) => {
+const extractWebsiteInformation = async (websiteUrl, isBusiness, domains, extractOptions = {}) => {
   try {
+    if (!websiteUrl) {
+      return {
+        companyServices: [],
+        keyIndicators: [],
+        aboutList: [],
+        addresses: [],
+        phoneContacts: [],
+        emailContacts: [],
+        errorPages: [],
+        socialLinks: {},
+        logo: ''
+      };
+    }
+
+    const defaultOptions = {
+      services: true,
+      indicators: true,
+      about: true,
+      contacts: true,
+      addresses: true,
+      socialLinks: true,
+      logo: true
+    };
+    
+    extractOptions = { ...defaultOptions, ...extractOptions };
+    
     const visitedPages = new Set();
     const baseUrl = new URL(websiteUrl).origin;
-    const companyServices = new Set();
-    const keyIndicators = new Set();
-    const aboutList = new Set();
-    const contacts = [];
-    const addresses = new Set();
-    const socialLinks = {};
+    
+    const companyServices = extractOptions.services ? new Set() : new Set();
+    const keyIndicators = extractOptions.indicators ? new Set() : new Set();
+    const aboutList = extractOptions.about ? new Set() : new Set();
+    const phoneContacts = extractOptions.contacts ? [] : [];
+    const emailContacts = extractOptions.contacts ? [] : [];
+    const addresses = extractOptions.addresses ? new Set() : new Set();
+    const socialLinks = extractOptions.socialLinks ? {} : {};
+    let logo = extractOptions.logo ? '' : '';
     const errorPages = [];
-    let logo = '';
 
     async function crawlWebsite(pageUrl, baseUrl) {
       if (!visitedPages.has(pageUrl)) {
@@ -305,35 +373,55 @@ const extractWebsiteInformation = async (websiteUrl, isBusiness, domains, extrac
           const html = response.data;
           const $ = load(html);
 
-          const { services, indicators, about, contact, address } = extractRelevantContent(
+          const { services, indicators, about, phoneContacts: phones, emailContacts: emails, address } = extractRelevantContent(
             $,
             serviceKeywords,
             aboutKeywords,
             pageUrl.includes('about') || pageUrl.includes('who-we-are'),
             isBusiness,
-            domains, 
+            domains,
             extractOptions
           );
 
-          services.forEach((item) => companyServices.add(item));
-          indicators.forEach((item) => keyIndicators.add(item));
-          about.forEach((item) => aboutList.add(item));
-          address.forEach((item) => addresses.add(item));
-
-          contact.forEach((item) => {
-            const existingContact = contacts.find((c) => c.value === item.value);
-            if (!existingContact) contacts.push(item);
-          });
+          //processes requested data only...
+          if (services) {
+            for (const item of services) {
+              companyServices.add(item);
+            }
+          }
+          if (indicators) {
+            for (const item of indicators) {
+              keyIndicators.add(item);
+            }
+          }
+          if (about) {
+            for (const item of about) {
+              aboutList.add(item);
+            }
+          }
+          if (address) {
+            for (const item of address) {
+              addresses.add(item);
+            }
+          }
+          if (phones) {
+            phones.forEach((item) => {
+              const existingContact = phoneContacts.find((c) => c.value === item.value);
+              if (!existingContact) phoneContacts.push(item);
+            });
+          }
+          if (emails) {
+            emails.forEach((item) => {
+              const existingContact = emailContacts.find((c) => c.value === item.value);
+              if (!existingContact) emailContacts.push(item);
+            });
+          }
 
           const internalLinks = [];
-
-          // scrap all links from main page
           $('a').each((_, element) => {
             const link = $(element).attr('href');
             if (link) {
-
-              // save social links
-              if (isSocialLink(link)) {
+              if (socialLinks && isSocialLink(link)) {
                 const matchedWord = isSocialLink(link);
                 socialLinks[matchedWord] = link;
               }
@@ -345,7 +433,7 @@ const extractWebsiteInformation = async (websiteUrl, isBusiness, domains, extrac
             }
           });
 
-          if (!logo) {
+          if (logo !== '' && !logo) {
             $('img').each((_, element) => {
               const link = $(element).attr('src');
               if (link && isLogo(link)) {
@@ -364,25 +452,36 @@ const extractWebsiteInformation = async (websiteUrl, isBusiness, domains, extrac
       return [];
     }
 
-    // First crawl the main website
     const internalLinks = await crawlWebsite(websiteUrl, baseUrl);
-    
-    // Then crawl all internal links in parallel
-    if (internalLinks.length > 0) {
-      await Promise.all(
-        internalLinks.map(link => crawlWebsite(link, baseUrl))
-      );
+    if (internalLinks && internalLinks.length > 0) {
+      for (const link of internalLinks) {
+        if (link) {
+          await crawlWebsite(link, baseUrl);
+        }
+      }
     }
 
-    return {
-      companyServices: [...companyServices],
-      keyIndicators: [...keyIndicators],
-      aboutList: [...aboutList],
-      addresses: [...addresses],
-      contacts,
+    console.log('Scrapped Website Data:', {
+      companyServices: companyServices ? [...companyServices] : [],
+      keyIndicators: keyIndicators ? [...keyIndicators] : [],
+      aboutList: aboutList ? [...aboutList] : [],
+      addresses: addresses ? [...addresses] : [],
+      phoneContacts: phoneContacts || [],
+      emailContacts: emailContacts || [],
       errorPages,
-      socialLinks,
-      logo
+      socialLinks: socialLinks || [],
+      logo: logo
+    })
+    return {
+      companyServices: Array.from(companyServices || []),
+      keyIndicators: Array.from(keyIndicators || []),
+      aboutList: Array.from(aboutList || []),
+      addresses: Array.from(addresses || []),
+      phoneContacts: phoneContacts || [],
+      emailContacts: emailContacts || [],
+      errorPages: errorPages || [],
+      socialLinks: socialLinks || {},
+      logo: logo || ''
     };
   } catch (error) {
     return {
@@ -390,10 +489,11 @@ const extractWebsiteInformation = async (websiteUrl, isBusiness, domains, extrac
       keyIndicators: [],
       aboutList: [],
       addresses: [],
-      contacts: [],
+      phoneContacts: [],
+      emailContacts: [],
       errorPages: [],
-      socialLinks: {},
-      logo: ''
+      socialLinks: [],
+      logo: []
     };
   }
 };

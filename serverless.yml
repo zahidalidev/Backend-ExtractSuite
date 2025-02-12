@@ -1,0 +1,35 @@
+service: testnoderabit
+
+provider:
+  name: aws
+  runtime: nodejs18.x
+  region: us-east-1
+  memorySize: 1024
+  timeout: 29
+  environment:
+    NODE_ENV: "development"
+
+package:
+  individually: true
+  patterns:
+    - '!**'
+    - 'src/**/*.js'
+    - 'index.js'
+    - 'package.json'
+    - 'node_modules/**'
+    - '!src/**/*.test.js'
+    - '!src/**/__tests__/**'
+
+functions:
+  app:
+    handler: index.handler
+    events:
+      - httpApi:
+          path: /health
+          method: GET
+      - httpApi:
+          path: /scrapWebsite
+          method: POST
+
+plugins:
+  - serverless-offline

@@ -45,7 +45,7 @@ router.post('/scrapWebsite', async (req, res) => {
     await cleanupQueues(queueName, resultQueue)
 
     console.log(`Request ${requestId} completed successfully`)
-    res.json({ results })
+    res.json({ data: results })
 
   } catch (error) {
     console.error(`Request ${requestId} failed:`, error)
