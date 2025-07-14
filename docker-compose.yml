@@ -5,6 +5,7 @@ services:
       - '5002:5000'
     environment:
       - NODE_ENV=production
+      - UV_THREADPOOL_SIZE=128
     depends_on:
       rabbitmq:
         condition: service_healthy
@@ -16,6 +17,12 @@ services:
       retries: 3
     volumes:
       - ./src:/usr/src/app/src
+    deploy:
+      resources:
+        limits:
+          memory: 2G
+        reservations:
+          memory: 1G
 
   rabbitmq:
     image: rabbitmq:3-management
@@ -24,6 +31,10 @@ services:
       - '15672:15672'
     volumes:
       - rabbitmq_data:/var/lib/rabbitmq
+      - ./rabbitmq.conf:/etc/rabbitmq/rabbitmq.conf
+    environment:
+      - RABBITMQ_DEFAULT_USER=admin
+      - RABBITMQ_DEFAULT_PASS=password
     healthcheck:
       test: ['CMD', 'rabbitmq-diagnostics', '-q', 'ping']
       interval: 10s
