@@ -1,5 +1,5 @@
-const express = require('express');
-const cors = require('cors');
+const express = require('express')
+const cors = require('cors')
 const cluster = require('cluster')
 const numCPUs = require('os').cpus().length
 const rateLimit = require('express-rate-limit')
@@ -8,73 +8,85 @@ const { setupScrapingQueueConsumer } = require('./services/queue/consumer')
 const scrapingRoutes = require('./routes/scrapWebsite')
 const { PORT } = require('./config/rabbitmq')
 
-// Only run clustering in production
+// Optimize clustering for production
 if (cluster.isMaster && process.env.NODE_ENV === 'production') {
-  // Fork workers based on CPU cores
-  for (let i = 0; i < numCPUs; i++) {
+  // Use all CPU cores for maximum performance
+  const workerCount = Math.max(numCPUs, 4)
+
+  console.log(`Starting ${workerCount} workers`)
+
+  for (let i = 0; i < workerCount; i++) {
     cluster.fork()
   }
 
   cluster.on('exit', (worker, code, signal) => {
-    console.log(`Worker ${worker.process.pid} died Restarting...`)
+    console.log(`Worker ${worker.process.pid} died. Restarting...`)
     cluster.fork()
   })
+
+  cluster.on('online', (worker) => {
+    console.log(`Worker ${worker.process.pid} is online`)
+  })
 } else {
-  const app = express();
+  const app = express()
 
-  app.use(cors({
-    origin: '*',
-    methods: ['GET', 'POST', 'OPTIONS'],
-    allowedHeaders: ['Content-Type', 'Authorization'],
-    credentials: true
-  }))
+  app.use(
+    cors({
+      origin: '*',
+      methods: ['GET', 'POST', 'OPTIONS'],
+      allowedHeaders: ['Content-Type', 'Authorization'],
+      credentials: true,
+    })
+  )
 
-  // Rate limiting
+  // Increased rate limiting for high throughput
   const limiter = rateLimit({
-    windowMs: 1 * 60 * 1000, // 1 minute
-    max: 1000 // limit each IP to 1000 requests per windowMs
+    windowMs: 1 * 60 * 1000,
+    max: 10000, // Increased from 1000
+    standardHeaders: true,
+    legacyHeaders: false,
   })
 
   app.use(limiter)
-  app.use(express.json({ limit: '50mb' })) // Increased payload limit
-  // Health check endpoint
+  app.use(express.json({ limit: '50mb' }))
+
   app.get('/health', (req, res) => res.status(200).send('OK'))
-  
   app.use('/api', scrapingRoutes)
 
-  // Enhanced initialization
   async function initialize() {
     try {
       await connectQueue()
       const channel = getChannel()
-      
+
       if (channel) {
-        // Configure queue with proper settings
+        // Optimized queue configuration
         await channel.assertQueue('scraping_queue', {
           durable: true,
           deadLetterExchange: 'dlx',
-          messageTtl: 24 * 60 * 60 * 1000, // 24 hours TTL
-          maxLength: 1000000 // Max queue length
+          messageTtl: 24 * 60 * 60 * 1000,
+          maxLength: 1000000,
+          arguments: {
+            'x-max-priority': 10, // Priority queue support
+          },
         })
 
-        // Setup dead letter exchange
         await channel.assertExchange('dlx', 'direct', { durable: true })
         await channel.assertQueue('dead_letter_queue', { durable: true })
         await channel.bindQueue('dead_letter_queue', 'dlx', 'scraping_queue')
 
-        // Prefetch control - process 100 messages at a time per consumer
-        channel.prefetch(100)
-        
+        // Increased prefetch for better throughput
+        channel.prefetch(50) // Increased from 100 to process more concurrently
+
         await setupScrapingQueueConsumer()
-        
-        console.log('Queue initialization completed')
+
+        console.log(`Worker ${process.pid} - Queue initialization completed`)
       } else {
         console.error('Failed to initialize - channel not available')
-        setTimeout(initialize, 10000)
+        setTimeout(initialize, 5000) // Reduced retry time
       }
     } catch (error) {
       console.error('Initialization error:', error)
-      setTimeout(initialize, 10000)
+      setTimeout(initialize, 5000)
     }
   }
 
