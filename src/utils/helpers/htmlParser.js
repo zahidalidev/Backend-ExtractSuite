@@ -369,7 +369,7 @@ const extractWebsiteInformation = async (websiteUrl, isBusiness, domains, extrac
     
     // Then crawl all internal links in parallel
     if (internalLinks.length > 0) {
-      await Promise.all(
+      await Promise.allSettled(
         internalLinks.map(link => crawlWebsite(link, baseUrl))
       );
     }

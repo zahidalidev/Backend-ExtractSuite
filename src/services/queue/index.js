@@ -56,7 +56,7 @@ async function sendLinksToQueue(
     )
   })
 
-  await Promise.all(promises)
+  await Promise.allSettled(promises)
   console.log('All links sent to queue successfully')
 }
 
